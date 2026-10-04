@@ -4,14 +4,18 @@ on:
   push:
     branches:
       - main
-      - feat/container-server-build
+      - feat/webauthn-security-key
     paths:
       - ".github/workflows/latest-linux-image.yml"
       - "Dockerfile"
       - "compose.yaml"
       - ".dockerignore"
+      - ".env.example"
+      - "app/**"
       - "docker/**"
+      - "requirements.txt"
       - "scripts/**"
+      - "SECURITY.md"
       - "README.md"
   pull_request:
     branches:
@@ -21,8 +25,12 @@ on:
       - "Dockerfile"
       - "compose.yaml"
       - ".dockerignore"
+      - ".env.example"
+      - "app/**"
       - "docker/**"
+      - "requirements.txt"
       - "scripts/**"
+      - "SECURITY.md"
       - "README.md"
   workflow_dispatch:
   schedule:
@@ -40,7 +48,10 @@ jobs:
       LINUX_IMAGE: ubuntu:latest
       SERVER_IMAGE: codex-linux-server:ci
       CONTAINER_NAME: codex-linux-server-ci
+      DATA_VOLUME: codex-security-data-ci
       HOST_PORT: "8080"
+      WEBAUTHN_RP_ID: localhost
+      WEBAUTHN_ORIGIN: http://localhost:8080
 
     steps:
       - name: Check out repository
@@ -54,10 +65,12 @@ jobs:
           chmod +x scripts/run-latest-linux.sh
           ./scripts/run-latest-linux.sh
 
-      - name: Build and start container server
+      - name: Build and start security-key protected container server
         env:
           CLEANUP_AFTER_TEST: "true"
         run: |
+          export SESSION_SECRET="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          export WEBAUTHN_BOOTSTRAP_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh
 
