@@ -44,13 +44,40 @@ After first registration, keep at least one second FIDO2 key as a recovery key. 
 
 ## Important operational controls
 
-- Keep `.env` readable only by the server administrator.
+- Secret values are stored in local files under `secrets/`, not in container environment variables. Keep that directory mode-restricted and readable only by the server administrator.
 - Back up the persistent Docker volume that contains `/data/webauthn.db`.
 - Restrict Docker socket access; anyone with Docker daemon control can bypass application-level controls.
 - Restrict SSH and server administration separately with MFA/security keys.
 - Use a firewall and expose only the HTTPS reverse proxy.
-- Rotate `SESSION_SECRET` after suspected compromise; this invalidates existing sessions.
-- Rotate `WEBAUTHN_BOOTSTRAP_TOKEN` after initial setup even though bootstrap registration is disabled once a key exists.
+- Rotate `secrets/session_secret` after suspected compromise; this invalidates existing sessions.
+- Rotate `secrets/webauthn_bootstrap_token` after initial setup even though bootstrap registration is disabled once a key exists.
 - Losing every registered security key and the credential database can cause administrative lockout.
 
 GitHub account security-key/2FA configuration is account-level and is separate from this repository's server authentication.
+
+
+## What is stored after security-key registration
+
+The hardware authenticator private key is never uploaded to this repository or container. The server stores only the WebAuthn credential ID, credential public key, signature counter, transport metadata, and creation time in `/data/webauthn.db`.
+
+To review registered keys without printing raw credential/public-key material:
+
+```bash
+./scripts/list-registered-security-keys.sh
+```
+
+The command prints SHA-256 fingerprints only and ends with `private_key_stored=false`.
+
+## Defensive attack simulation
+
+`scripts/security-attack-simulation.sh` performs an authorized, non-destructive simulation against this container. CI uses disposable canary secrets and checks that:
+
+- secret values do not appear in `docker inspect` environment output;
+- secret values do not appear in the application process environment;
+- public HTTP routes and attempted sensitive-file paths do not expose the canaries;
+- missing or incorrect bootstrap tokens receive HTTP 403;
+- unauthenticated credential enumeration receives HTTP 403;
+- application logs do not contain the canaries;
+- the WebAuthn database schema contains a public-key column but no private-key/secret-key column.
+
+This does not claim protection from host-root or Docker-daemon compromise. A process with root/Docker control can read mounted server secret files and the WebAuthn database. Even in that scenario, a correctly functioning FIDO2 hardware authenticator's private key is not present on the server and is therefore not available to exfiltrate from the container.
