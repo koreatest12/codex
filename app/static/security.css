@@ -48,3 +48,16 @@ button {
 .notice { margin-top: 28px; font-size: .9rem; opacity: .72; }
 .success { margin-top: 18px; }
 .error { margin-top: 18px; font-weight: 700; }
+
+select { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid color-mix(in srgb, CanvasText 30%, transparent); border-radius: 8px; font: inherit; background: Canvas; color: CanvasText; }
+.vault { margin-top: 32px; padding-top: 24px; border-top: 1px solid color-mix(in srgb, CanvasText 18%, transparent); }
+.vault-note { font-size: .92rem; opacity: .8; line-height: 1.55; }
+.vault-toolbar { margin-top: 24px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.private-values { margin-top: 12px; display: grid; gap: 10px; }
+.private-value-row { display: flex; gap: 16px; justify-content: space-between; align-items: center; padding: 14px; border: 1px solid color-mix(in srgb, CanvasText 16%, transparent); border-radius: 10px; }
+.private-value-text { min-width: 0; display: grid; gap: 4px; }
+.private-value-meta { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; opacity: .82; }
+.private-value-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.compact, .danger { margin-top: 0; padding: 8px 10px; }
+.danger { opacity: .86; }
+@media (max-width: 620px) { .private-value-row { align-items: stretch; flex-direction: column; } }
