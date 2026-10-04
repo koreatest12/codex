@@ -215,3 +215,7 @@ docker compose up -d --build
 ```
 
 See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURITY.md](SECURITY.md).
+
+## Study notes
+
+정보보안기사·개발 준비용 디지털시스템 정리: [docs/study/DIGITAL_SYSTEMS.md](docs/study/DIGITAL_SYSTEMS.md)
