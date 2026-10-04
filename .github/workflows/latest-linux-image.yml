@@ -6,6 +6,7 @@ on:
       - main
       - security/harden-webauthn-secrets
       - feature/biff-2026-java-toolchain
+      - feature/private-data-vault
     paths:
       - ".github/workflows/latest-linux-image.yml"
       - "Dockerfile"
@@ -59,6 +60,7 @@ jobs:
       WEBAUTHN_ORIGIN: http://localhost:8080
       SESSION_SECRET_FILE: ${{ github.workspace }}/.ci-secrets/session_secret
       WEBAUTHN_BOOTSTRAP_TOKEN_FILE: ${{ github.workspace }}/.ci-secrets/webauthn_bootstrap_token
+      DATA_ENCRYPTION_KEY_FILE: ${{ github.workspace }}/.ci-secrets/data_encryption_key
 
     steps:
       - name: Check out repository
@@ -75,7 +77,13 @@ jobs:
       - name: Validate shell and Python syntax
         run: |
           bash -n scripts/*.sh docker/entrypoint.sh
-          python3 -m py_compile app/server.py
+          python3 -m py_compile app/server.py app/privacy.py scripts/rotate-data-encryption-key.py
+
+      - name: Run Python privacy tests
+        run: |
+          python3 -m venv .ci-python
+          .ci-python/bin/pip install --disable-pip-version-check -r requirements.txt
+          PYTHONPATH=app .ci-python/bin/python -m unittest discover -s tests -v
 
       - name: Verify Java compiler, Maven, and BIFF planner
         run: |
@@ -88,6 +96,7 @@ jobs:
           mkdir -p .ci-secrets
           python3 -c 'import secrets; print("CI_SESSION_" + secrets.token_urlsafe(40))' > .ci-secrets/session_secret
           python3 -c 'import secrets; print("CI_BOOTSTRAP_" + secrets.token_urlsafe(40))' > .ci-secrets/webauthn_bootstrap_token
+          python3 -c 'import base64,secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii"))' > .ci-secrets/data_encryption_key
           chmod 600 .ci-secrets/*
 
       - name: Show Docker version

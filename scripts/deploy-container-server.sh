@@ -8,6 +8,7 @@ HOST_PORT="${HOST_PORT:-8080}"
 DATA_VOLUME="${DATA_VOLUME:-codex-security-data}"
 SESSION_SECRET_FILE="${SESSION_SECRET_FILE:-secrets/session_secret}"
 WEBAUTHN_BOOTSTRAP_TOKEN_FILE="${WEBAUTHN_BOOTSTRAP_TOKEN_FILE:-secrets/webauthn_bootstrap_token}"
+DATA_ENCRYPTION_KEY_FILE="${DATA_ENCRYPTION_KEY_FILE:-secrets/data_encryption_key}"
 CLEANUP_AFTER_TEST="${CLEANUP_AFTER_TEST:-false}"
 
 : "${WEBAUTHN_RP_ID:?WEBAUTHN_RP_ID must be configured}"
@@ -32,6 +33,7 @@ resolve_secret_file() {
 
 SESSION_SECRET_SOURCE="$(resolve_secret_file "$SESSION_SECRET_FILE")"
 BOOTSTRAP_TOKEN_SOURCE="$(resolve_secret_file "$WEBAUTHN_BOOTSTRAP_TOKEN_FILE")"
+DATA_ENCRYPTION_KEY_SOURCE="$(resolve_secret_file "$DATA_ENCRYPTION_KEY_FILE")"
 
 cleanup() {
   if [[ "${CLEANUP_AFTER_TEST}" == "true" ]]; then
@@ -64,8 +66,10 @@ docker run -d \
   -v "${DATA_VOLUME}:/data" \
   --mount "type=bind,src=${SESSION_SECRET_SOURCE},dst=/run/secrets/session_secret,readonly" \
   --mount "type=bind,src=${BOOTSTRAP_TOKEN_SOURCE},dst=/run/secrets/webauthn_bootstrap_token,readonly" \
+  --mount "type=bind,src=${DATA_ENCRYPTION_KEY_SOURCE},dst=/run/secrets/data_encryption_key,readonly" \
   -e "SESSION_SECRET_FILE=/run/secrets/session_secret" \
   -e "WEBAUTHN_BOOTSTRAP_TOKEN_FILE=/run/secrets/webauthn_bootstrap_token" \
+  -e "DATA_ENCRYPTION_KEY_FILE=/run/secrets/data_encryption_key" \
   -e "WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID}" \
   -e "WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN}" \
   -e "WEBAUTHN_RP_NAME=${WEBAUTHN_RP_NAME:-Codex Container Server}" \
@@ -110,4 +114,5 @@ echo
 echo "Container server deployment: OK"
 echo "WebAuthn security-key gate: ENABLED"
 echo "Secret transport: FILE MOUNTS"
+echo "Private-data encryption: AES-256-GCM"
 echo "Local URL: http://127.0.0.1:${HOST_PORT}"
