@@ -15,7 +15,8 @@ WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
 RUN python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
-    && /opt/venv/bin/pip install --no-cache-dir -r /opt/app/requirements.txt
+    && /opt/venv/bin/pip install --no-cache-dir -r /opt/app/requirements.txt \
+    && /opt/venv/bin/python -c 'from cryptography.hazmat.primitives.ciphers.aead import AESGCM; print("AES-256-GCM support: OK")'
 
 COPY app/ /opt/app/
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default

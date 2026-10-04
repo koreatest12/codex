@@ -10,6 +10,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from flask import Flask, Response, jsonify, render_template, request, session
+
+from privacy import PrivacyCipher, mask_value, validate_kind
 from webauthn import (
     base64url_to_bytes,
     generate_authentication_options,
@@ -63,6 +65,10 @@ ORIGIN = require_env("WEBAUTHN_ORIGIN").rstrip("/")
 BOOTSTRAP_TOKEN = require_secret(
     "WEBAUTHN_BOOTSTRAP_TOKEN", "WEBAUTHN_BOOTSTRAP_TOKEN_FILE"
 )
+DATA_ENCRYPTION_KEY = require_secret(
+    "DATA_ENCRYPTION_KEY", "DATA_ENCRYPTION_KEY_FILE"
+)
+PRIVACY_CIPHER = PrivacyCipher(DATA_ENCRYPTION_KEY)
 RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Codex Container Server").strip()
 USER_NAME = os.environ.get("WEBAUTHN_USER_NAME", "admin").strip()
 DATABASE_PATH = Path(os.environ.get("WEBAUTHN_DB_PATH", "/data/webauthn.db"))
@@ -127,6 +133,18 @@ def init_db() -> None:
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS private_values (
+                record_id TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                nonce BLOB NOT NULL,
+                ciphertext BLOB NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
 
 
 def credential_rows():
@@ -148,6 +166,41 @@ def credential_count() -> int:
     with db() as connection:
         row = connection.execute("SELECT COUNT(*) AS total FROM credentials").fetchone()
         return int(row["total"])
+
+
+def private_value_count() -> int:
+    with db() as connection:
+        row = connection.execute("SELECT COUNT(*) AS total FROM private_values").fetchone()
+        return int(row["total"])
+
+
+def private_value_rows():
+    with db() as connection:
+        return connection.execute(
+            """
+            SELECT record_id, kind, nonce, ciphertext, created_at, updated_at
+            FROM private_values
+            ORDER BY created_at DESC
+            """
+        ).fetchall()
+
+
+def private_value_row(record_id: str):
+    with db() as connection:
+        return connection.execute(
+            """
+            SELECT record_id, kind, nonce, ciphertext, created_at, updated_at
+            FROM private_values
+            WHERE record_id = ?
+            """,
+            (record_id,),
+        ).fetchone()
+
+
+def require_authenticated():
+    if session.get("authenticated") is not True:
+        return jsonify({"error": "authentication required"}), 403
+    return None
 
 
 def get_or_create_user_id() -> bytes:
@@ -222,6 +275,11 @@ def security_status():
             "authenticated": session.get("authenticated") is True,
             "rp_id": RP_ID,
             "https_required": not is_local_origin,
+            "private_data_encryption": "AES-256-GCM",
+            "private_data_masked_by_default": True,
+            "private_value_count": (
+                private_value_count() if session.get("authenticated") is True else None
+            ),
         }
     )
 
@@ -407,6 +465,228 @@ def authentication_verify():
     session.permanent = True
     session["authenticated"] = True
     return jsonify({"ok": True})
+
+
+
+@app.get("/api/private-values")
+def list_private_values():
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    values = []
+    for row in private_value_rows():
+        try:
+            payload = PRIVACY_CIPHER.decrypt(
+                row["record_id"],
+                row["kind"],
+                bytes(row["nonce"]),
+                bytes(row["ciphertext"]),
+            )
+            values.append(
+                {
+                    "id": row["record_id"],
+                    "kind": row["kind"],
+                    "label": payload["label"],
+                    "masked_value": mask_value(row["kind"], payload["value"]),
+                    "created_at": row["created_at"],
+                    "updated_at": row["updated_at"],
+                    "encrypted_at_rest": True,
+                }
+            )
+        except Exception:
+            app.logger.error("Unable to decrypt private value record id=%s", row["record_id"])
+            values.append(
+                {
+                    "id": row["record_id"],
+                    "kind": row["kind"],
+                    "label": "[decrypt error]",
+                    "masked_value": "********",
+                    "created_at": row["created_at"],
+                    "updated_at": row["updated_at"],
+                    "encrypted_at_rest": True,
+                    "corrupt": True,
+                }
+            )
+
+    return jsonify(
+        {
+            "values": values,
+            "encryption": "AES-256-GCM",
+            "masked_by_default": True,
+            "reveal_requires_fresh_webauthn": True,
+        }
+    )
+
+
+@app.post("/api/private-values")
+def create_private_value():
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "invalid private-data payload"}), 400
+
+    label = str(payload.get("label", "")).strip()
+    value = str(payload.get("value", "")).strip()
+    try:
+        kind = validate_kind(str(payload.get("kind", "")))
+    except ValueError:
+        return jsonify({"error": "unsupported private-data kind"}), 400
+
+    if not label or len(label) > 80:
+        return jsonify({"error": "label must be 1-80 characters"}), 400
+    if not value or len(value) > 512:
+        return jsonify({"error": "value must be 1-512 characters"}), 400
+
+    record_id = secrets.token_urlsafe(18)
+    nonce, ciphertext = PRIVACY_CIPHER.encrypt(record_id, kind, label, value)
+
+    with db() as connection:
+        connection.execute(
+            """
+            INSERT INTO private_values(record_id, kind, nonce, ciphertext)
+            VALUES (?, ?, ?, ?)
+            """,
+            (record_id, kind, sqlite3.Binary(nonce), sqlite3.Binary(ciphertext)),
+        )
+
+    return jsonify(
+        {
+            "id": record_id,
+            "kind": kind,
+            "label": label,
+            "masked_value": mask_value(kind, value),
+            "encrypted_at_rest": True,
+        }
+    ), 201
+
+
+@app.delete("/api/private-values/<record_id>")
+def delete_private_value(record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    with db() as connection:
+        cursor = connection.execute(
+            "DELETE FROM private_values WHERE record_id = ?",
+            (record_id,),
+        )
+    if cursor.rowcount == 0:
+        return jsonify({"error": "private value not found"}), 404
+    return jsonify({"ok": True})
+
+
+@app.post("/api/private-values/<record_id>/reveal/options")
+def private_reveal_options(record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    if private_value_row(record_id) is None:
+        return jsonify({"error": "private value not found"}), 404
+
+    rows = credential_rows()
+    if not rows:
+        return jsonify({"error": "no security key has been registered"}), 409
+
+    options = generate_authentication_options(
+        rp_id=RP_ID,
+        allow_credentials=[
+            PublicKeyCredentialDescriptor(id=bytes(row["credential_id"])) for row in rows
+        ],
+        user_verification=UserVerificationRequirement.REQUIRED,
+        timeout=60_000,
+    )
+    session["private_reveal_challenge"] = b64url_encode(options.challenge)
+    session["private_reveal_record_id"] = record_id
+    return Response(options_to_json(options), mimetype="application/json")
+
+
+@app.post("/api/private-values/<record_id>/reveal/verify")
+def private_reveal_verify(record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    credential = request.get_json(silent=True)
+    if not isinstance(credential, dict) or not credential.get("id"):
+        return jsonify({"error": "invalid credential payload"}), 400
+
+    expected_record_id = session.pop("private_reveal_record_id", None)
+    if expected_record_id != record_id:
+        session.pop("private_reveal_challenge", None)
+        return jsonify({"error": "private reveal ceremony expired or invalid"}), 400
+
+    try:
+        normalized_key = b64url_encode(base64url_to_bytes(credential["id"]))
+        expected_challenge = require_challenge("private_reveal_challenge")
+    except Exception:
+        return jsonify({"error": "private reveal ceremony expired or invalid"}), 400
+
+    with db() as connection:
+        credential_row = connection.execute(
+            """
+            SELECT credential_key, credential_id, public_key, sign_count
+            FROM credentials
+            WHERE credential_key = ?
+            """,
+            (normalized_key,),
+        ).fetchone()
+
+    if not credential_row:
+        return jsonify({"error": "unknown security key"}), 403
+
+    try:
+        verification = verify_authentication_response(
+            credential=credential,
+            expected_challenge=expected_challenge,
+            expected_rp_id=RP_ID,
+            expected_origin=ORIGIN,
+            credential_public_key=bytes(credential_row["public_key"]),
+            credential_current_sign_count=int(credential_row["sign_count"]),
+            require_user_verification=True,
+        )
+    except Exception as exc:
+        app.logger.warning(
+            "Private-value reveal authentication rejected: %s",
+            type(exc).__name__,
+        )
+        return jsonify({"error": "security key authentication failed"}), 403
+
+    with db() as connection:
+        connection.execute(
+            "UPDATE credentials SET sign_count = ? WHERE credential_key = ?",
+            (int(verification.new_sign_count), normalized_key),
+        )
+
+    row = private_value_row(record_id)
+    if row is None:
+        return jsonify({"error": "private value not found"}), 404
+
+    try:
+        payload = PRIVACY_CIPHER.decrypt(
+            row["record_id"],
+            row["kind"],
+            bytes(row["nonce"]),
+            bytes(row["ciphertext"]),
+        )
+    except Exception:
+        app.logger.error("Unable to decrypt private value record id=%s", record_id)
+        return jsonify({"error": "unable to decrypt private value"}), 500
+
+    return jsonify(
+        {
+            "id": record_id,
+            "kind": row["kind"],
+            "label": payload["label"],
+            "value": payload["value"],
+            "step_up_authenticated": True,
+        }
+    )
 
 
 @app.post("/api/security/logout")

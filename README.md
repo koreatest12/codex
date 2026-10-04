@@ -191,3 +191,27 @@ The Docker image now installs:
 GitHub Actions verifies Java 21, the compiler, Maven, the Maven package build, the CLI smoke test, and the same toolchain again inside the final Ubuntu container.
 
 The itinerary intentionally omits reservation IDs, personal contact information, and other secrets even though the repository is public.
+
+## Encrypted reservation/contact vault
+
+Authenticated users can store reservation numbers and personal contact values in the web UI without committing them to Git.
+
+- AES-256-GCM encryption at rest.
+- Dedicated key mounted from `secrets/data_encryption_key`.
+- Labels and values are encrypted together.
+- Lists return masked values only.
+- Raw reveal requires a fresh FIDO2/WebAuthn assertion and is re-masked in the browser after 15 seconds.
+- Nginx rate-limits the private-data API.
+- The Java planner includes a stdin-only masking helper.
+
+New installs get the encryption key from `scripts/generate-security-env.sh`.
+
+Existing installs must create it once:
+
+```bash
+chmod +x scripts/generate-data-encryption-key.sh
+./scripts/generate-data-encryption-key.sh
+docker compose up -d --build
+```
+
+See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURITY.md](SECURITY.md).

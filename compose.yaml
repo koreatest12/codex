@@ -10,12 +10,14 @@ services:
     environment:
       SESSION_SECRET_FILE: /run/secrets/session_secret
       WEBAUTHN_BOOTSTRAP_TOKEN_FILE: /run/secrets/webauthn_bootstrap_token
+      DATA_ENCRYPTION_KEY_FILE: /run/secrets/data_encryption_key
       WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:?Set WEBAUTHN_RP_ID in .env}
       WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN:?Set WEBAUTHN_ORIGIN in .env}
       WEBAUTHN_RP_NAME: ${WEBAUTHN_RP_NAME:-Codex Container Server}
     secrets:
       - session_secret
       - webauthn_bootstrap_token
+      - data_encryption_key
     ports:
       - "127.0.0.1:${HOST_PORT:-8080}:8080"
     volumes:
@@ -32,6 +34,8 @@ secrets:
     file: ./secrets/session_secret
   webauthn_bootstrap_token:
     file: ./secrets/webauthn_bootstrap_token
+  data_encryption_key:
+    file: ./secrets/data_encryption_key
 
 volumes:
   security-data:

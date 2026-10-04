@@ -18,6 +18,31 @@
         <button id="add-key" type="button">백업 보안키 추가</button>
         <button id="logout" class="secondary" type="button">로그아웃</button>
       </div>
+
+      <section id="private-vault" class="vault" aria-labelledby="private-vault-title">
+        <h2 id="private-vault-title">암호화 개인정보 보관함</h2>
+        <p class="vault-note">예매번호와 개인 연락처는 AES-256-GCM으로 암호화하여 저장합니다. 목록에는 마스킹된 값만 표시하며 원문 열람은 보안키 재인증이 필요합니다.</p>
+        <form id="private-value-form">
+          <label for="private-kind">정보 종류</label>
+          <select id="private-kind" required>
+            <option value="reservation">예매/예약 번호</option>
+            <option value="phone">전화번호</option>
+            <option value="email">이메일</option>
+            <option value="contact">기타 연락처</option>
+            <option value="other">기타 민감정보</option>
+          </select>
+          <label for="private-label">표시 이름</label>
+          <input id="private-label" maxlength="80" placeholder="예: SRT 예매번호" required>
+          <label for="private-value">원문 값</label>
+          <input id="private-value" type="password" maxlength="512" autocomplete="off" required>
+          <button type="submit">암호화하여 저장</button>
+        </form>
+        <div class="vault-toolbar">
+          <strong>저장된 항목</strong>
+          <button id="refresh-private-values" class="secondary compact" type="button">새로고침</button>
+        </div>
+        <div id="private-values" class="private-values" aria-live="polite"></div>
+      </section>
     {% elif registered %}
       <h2>Security Key Required</h2>
       <p>서버 접근을 위해 등록된 FIDO2 보안키로 인증해야 합니다.</p>

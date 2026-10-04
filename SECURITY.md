@@ -81,3 +81,34 @@ The command prints SHA-256 fingerprints only and ends with `private_key_stored=f
 - the WebAuthn database schema contains a public-key column but no private-key/secret-key column.
 
 This does not claim protection from host-root or Docker-daemon compromise. A process with root/Docker control can read mounted server secret files and the WebAuthn database. Even in that scenario, a correctly functioning FIDO2 hardware authenticator's private key is not present on the server and is therefore not available to exfiltrate from the container.
+
+
+## Encrypted private-data vault
+
+Reservation numbers, phone numbers, email addresses, and other private itinerary values must not be committed to Git.
+
+The authenticated web UI provides a private-data vault with these controls:
+
+- AES-256-GCM authenticated encryption at rest.
+- A dedicated 256-bit data-encryption key stored only in a Docker/file secret.
+- SQLite stores only `record_id`, `kind`, a 96-bit nonce, ciphertext/tag, and timestamps.
+- Labels and original values are both inside the encrypted payload.
+- List responses show masked values only.
+- Revealing the original value requires a fresh WebAuthn assertion even when a session is already authenticated.
+- Revealed values are automatically re-masked in the browser after 15 seconds.
+- Nginx rate-limits the private-data API.
+- The defensive attack simulation checks that the data-encryption key is absent from HTTP responses, process/container environment output, and logs.
+
+### Existing installation upgrade
+
+```bash
+chmod +x scripts/generate-data-encryption-key.sh
+./scripts/generate-data-encryption-key.sh
+docker compose up -d --build
+```
+
+Back up `secrets/data_encryption_key` separately from the SQLite volume. If that key is lost, encrypted private values cannot be recovered.
+
+For planned key rotation, use `scripts/rotate-data-encryption-key.py` while the application is stopped and after making a database backup.
+
+Never commit the key, reservation numbers, phone numbers, or other raw private values.
