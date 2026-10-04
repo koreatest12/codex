@@ -12,6 +12,7 @@ on:
       - ".dockerignore"
       - "docker/**"
       - "scripts/**"
+      - "tests/**"
       - "README.md"
   pull_request:
     branches:
@@ -23,6 +24,7 @@ on:
       - ".dockerignore"
       - "docker/**"
       - "scripts/**"
+      - "tests/**"
       - "README.md"
   workflow_dispatch:
   schedule:
@@ -38,13 +40,16 @@ jobs:
     timeout-minutes: 15
     env:
       LINUX_IMAGE: ubuntu:latest
-      SERVER_IMAGE: codex-linux-server:ci
-      CONTAINER_NAME: codex-linux-server-ci
+      SERVER_IMAGE: codex-linux-server:ci-${{ github.run_id }}-${{ github.run_attempt }}
+      CONTAINER_NAME: codex-linux-server-ci-${{ github.run_id }}-${{ github.run_attempt }}
       HOST_PORT: "8080"
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+
+      - name: Test non-destructive container behavior (mock Docker)
+        run: python3 -m unittest discover -s tests -v
 
       - name: Show Docker version
         run: docker version
@@ -55,8 +60,6 @@ jobs:
           ./scripts/run-latest-linux.sh
 
       - name: Build and start container server
-        env:
-          CLEANUP_AFTER_TEST: "true"
         run: |
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh

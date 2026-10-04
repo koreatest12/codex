@@ -15,7 +15,7 @@ echo "==> Image digest"
 docker image inspect "${IMAGE}" --format '{{join .RepoDigests "\n"}}'
 
 echo "==> Running smoke test inside ${IMAGE}"
-docker run --rm "${IMAGE}" sh -lc '
+docker run "${IMAGE}" sh -lc '
   set -eu
   echo "--- /etc/os-release ---"
   cat /etc/os-release
@@ -28,3 +28,5 @@ docker run --rm "${IMAGE}" sh -lc '
   echo
   echo "Linux image smoke test: OK"
 '
+
+echo "Smoke-test container retained; automatic container cleanup is disabled."
