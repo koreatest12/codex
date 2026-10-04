@@ -1,0 +1,17 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${LINUX_IMAGE:-ubuntu:latest}
+    image: ${SERVER_IMAGE:-codex-linux-server:latest}
+    container_name: ${CONTAINER_NAME:-codex-linux-server}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${HOST_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
