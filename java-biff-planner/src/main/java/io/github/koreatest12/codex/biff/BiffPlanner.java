@@ -1,5 +1,8 @@
 package io.github.koreatest12.codex.biff;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Locale;
 
@@ -64,6 +67,7 @@ public final class BiffPlanner {
             case "food" -> printFood();
             case "hotel" -> printHotel();
             case "toolchain" -> printToolchain();
+            case "mask-stdin" -> maskFromStdin(args);
             case "help", "--help", "-h" -> printHelp();
             default -> {
                 System.err.println("Unknown command: " + command);
@@ -120,7 +124,24 @@ public final class BiffPlanner {
         System.out.println("os.arch=" + System.getProperty("os.arch"));
     }
 
+    private static void maskFromStdin(String[] args) {
+        if (args.length < 2) {
+            throw new IllegalArgumentException("mask-stdin requires a kind: reservation|phone|email|contact|other");
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String value = reader.readLine();
+            if (value == null) {
+                throw new IllegalArgumentException("no value was provided on stdin");
+            }
+            System.out.println(PiiMasker.mask(args[1], value));
+        } catch (IOException exc) {
+            throw new IllegalStateException("unable to read stdin", exc);
+        }
+    }
+
     private static void printHelp() {
-        System.out.println("Usage: java -jar biff-planner.jar [all|summary|day1|day2|food|hotel|toolchain]");
+        System.out.println("Usage: java -jar biff-planner.jar [all|summary|day1|day2|food|hotel|toolchain|mask-stdin KIND]");
+        System.out.println("Pipe sensitive values over stdin so they are not stored in shell history.");
     }
 }
