@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - security/harden-webauthn-secrets
+      - feature/biff-2026-java-toolchain
     paths:
       - ".github/workflows/latest-linux-image.yml"
       - "Dockerfile"
@@ -15,6 +16,8 @@ on:
       - "docker/**"
       - "requirements.txt"
       - "scripts/**"
+      - "java-biff-planner/**"
+      - "docs/biff-2026/**"
       - "SECURITY.md"
       - "README.md"
   pull_request:
@@ -30,6 +33,8 @@ on:
       - "docker/**"
       - "requirements.txt"
       - "scripts/**"
+      - "java-biff-planner/**"
+      - "docs/biff-2026/**"
       - "SECURITY.md"
       - "README.md"
   workflow_dispatch:
@@ -43,7 +48,7 @@ jobs:
   build-and-run:
     name: Pull Ubuntu, build server, and verify container
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       LINUX_IMAGE: ubuntu:latest
       SERVER_IMAGE: codex-linux-server:ci
@@ -59,10 +64,23 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
 
+      - name: Set up Java 21 for Maven verification
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: java-biff-planner/pom.xml
+
       - name: Validate shell and Python syntax
         run: |
           bash -n scripts/*.sh docker/entrypoint.sh
           python3 -m py_compile app/server.py
+
+      - name: Verify Java compiler, Maven, and BIFF planner
+        run: |
+          chmod +x scripts/verify-java-toolchain.sh
+          ./scripts/verify-java-toolchain.sh
 
       - name: Create ephemeral canary secret files
         run: |
@@ -84,6 +102,17 @@ jobs:
         run: |
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh
+
+      - name: Verify Java toolchain inside built container image
+        run: |
+          docker run --rm --entrypoint /bin/bash "${SERVER_IMAGE}" -lc '
+            set -e
+            java -version
+            javac -version
+            mvn -version
+            java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar toolchain
+            java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar summary >/dev/null
+          '
 
       - name: Run simulated secret-exfiltration attacks
         run: |
