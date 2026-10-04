@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/webauthn-security-key
+      - security/harden-webauthn-secrets
     paths:
       - ".github/workflows/latest-linux-image.yml"
       - "Dockerfile"
@@ -52,10 +52,25 @@ jobs:
       HOST_PORT: "8080"
       WEBAUTHN_RP_ID: localhost
       WEBAUTHN_ORIGIN: http://localhost:8080
+      SESSION_SECRET_FILE: ${{ github.workspace }}/.ci-secrets/session_secret
+      WEBAUTHN_BOOTSTRAP_TOKEN_FILE: ${{ github.workspace }}/.ci-secrets/webauthn_bootstrap_token
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
+
+      - name: Validate shell and Python syntax
+        run: |
+          bash -n scripts/*.sh docker/entrypoint.sh
+          python3 -m py_compile app/server.py
+
+      - name: Create ephemeral canary secret files
+        run: |
+          umask 077
+          mkdir -p .ci-secrets
+          python3 -c 'import secrets; print("CI_SESSION_" + secrets.token_urlsafe(40))' > .ci-secrets/session_secret
+          python3 -c 'import secrets; print("CI_BOOTSTRAP_" + secrets.token_urlsafe(40))' > .ci-secrets/webauthn_bootstrap_token
+          chmod 600 .ci-secrets/*
 
       - name: Show Docker version
         run: docker version
@@ -66,13 +81,29 @@ jobs:
           ./scripts/run-latest-linux.sh
 
       - name: Build and start security-key protected container server
-        env:
-          CLEANUP_AFTER_TEST: "true"
         run: |
-          export SESSION_SECRET="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
-          export WEBAUTHN_BOOTSTRAP_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh
 
+      - name: Run simulated secret-exfiltration attacks
+        run: |
+          chmod +x scripts/security-attack-simulation.sh
+          ./scripts/security-attack-simulation.sh
+
+      - name: Verify redacted key inventory
+        run: |
+          chmod +x scripts/list-registered-security-keys.sh
+          output="$(./scripts/list-registered-security-keys.sh)"
+          echo "$output"
+          echo "$output" | grep -q '^registered_security_keys=0$'
+          echo "$output" | grep -q '^private_key_stored=false$'
+
       - name: Show built server image
         run: docker image inspect "${SERVER_IMAGE}" --format 'Image={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
+
+      - name: Clean up CI container and canary secrets
+        if: always()
+        run: |
+          docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+          docker volume rm "${DATA_VOLUME}" >/dev/null 2>&1 || true
+          rm -rf .ci-secrets

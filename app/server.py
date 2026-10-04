@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import hmac
 import json
 import os
@@ -33,10 +34,35 @@ def require_env(name: str) -> str:
     return value
 
 
-SESSION_SECRET = require_env("SESSION_SECRET")
+def require_secret(name: str, file_name: str) -> str:
+    direct = os.environ.get(name, "").strip()
+    secret_file = os.environ.get(file_name, "").strip()
+
+    if direct and secret_file:
+        raise RuntimeError(f"configure only one of {name} or {file_name}")
+
+    if secret_file:
+        path = Path(secret_file)
+        try:
+            value = path.read_text(encoding="utf-8").strip()
+        except OSError as exc:
+            raise RuntimeError(f"unable to read {file_name}") from exc
+        if not value:
+            raise RuntimeError(f"{file_name} points to an empty secret")
+        return value
+
+    if direct:
+        return direct
+
+    raise RuntimeError(f"{name} or {file_name} must be configured")
+
+
+SESSION_SECRET = require_secret("SESSION_SECRET", "SESSION_SECRET_FILE")
 RP_ID = require_env("WEBAUTHN_RP_ID")
 ORIGIN = require_env("WEBAUTHN_ORIGIN").rstrip("/")
-BOOTSTRAP_TOKEN = require_env("WEBAUTHN_BOOTSTRAP_TOKEN")
+BOOTSTRAP_TOKEN = require_secret(
+    "WEBAUTHN_BOOTSTRAP_TOKEN", "WEBAUTHN_BOOTSTRAP_TOKEN_FILE"
+)
 RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Codex Container Server").strip()
 USER_NAME = os.environ.get("WEBAUTHN_USER_NAME", "admin").strip()
 DATABASE_PATH = Path(os.environ.get("WEBAUTHN_DB_PATH", "/data/webauthn.db"))
@@ -106,8 +132,16 @@ def init_db() -> None:
 def credential_rows():
     with db() as connection:
         return connection.execute(
-            "SELECT credential_key, credential_id, public_key, sign_count, transports FROM credentials ORDER BY created_at"
+            """
+            SELECT credential_key, credential_id, public_key, sign_count, transports, created_at
+            FROM credentials
+            ORDER BY created_at
+            """
         ).fetchall()
+
+
+def credential_fingerprint(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
 
 
 def credential_count() -> int:
@@ -190,6 +224,31 @@ def security_status():
             "https_required": not is_local_origin,
         }
     )
+
+
+@app.get("/api/security/credentials")
+def security_credentials():
+    if session.get("authenticated") is not True:
+        return jsonify({"error": "authentication required"}), 403
+
+    credentials = []
+    for row in credential_rows():
+        try:
+            transports = json.loads(row["transports"])
+        except (TypeError, json.JSONDecodeError):
+            transports = []
+
+        credentials.append(
+            {
+                "credential_id_sha256": credential_fingerprint(bytes(row["credential_id"])),
+                "public_key_sha256": credential_fingerprint(bytes(row["public_key"])),
+                "sign_count": int(row["sign_count"]),
+                "transports": transports,
+                "created_at": row["created_at"],
+            }
+        )
+
+    return jsonify({"credentials": credentials, "private_key_stored": False})
 
 
 @app.get("/")

@@ -47,6 +47,8 @@ fastlane/test_output
 
 # Local security secrets and WebAuthn credential state
 .env
+secrets/
+.ci-secrets/
 data/
 *.db
 *.db-shm

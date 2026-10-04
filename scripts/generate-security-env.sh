@@ -3,6 +3,7 @@ set -euo pipefail
 
 RP_ID="${1:-localhost}"
 ORIGIN="${2:-http://localhost:${HOST_PORT:-8080}}"
+SECRETS_DIR="${SECRETS_DIR:-secrets}"
 
 if [[ "${RP_ID}" != "localhost" && "${ORIGIN}" != https://* ]]; then
   echo "ERROR: Non-localhost WebAuthn origins must use HTTPS." >&2
@@ -14,23 +15,27 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -e .env ]]; then
-  echo "ERROR: .env already exists. Refusing to overwrite secrets." >&2
+if [[ -e .env || -e "${SECRETS_DIR}/session_secret" || -e "${SECRETS_DIR}/webauthn_bootstrap_token" ]]; then
+  echo "ERROR: Existing security configuration found. Refusing to overwrite it." >&2
   exit 1
 fi
 
 umask 077
-SESSION_SECRET="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
-BOOTSTRAP_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
+mkdir -p "${SECRETS_DIR}"
+chmod 700 "${SECRETS_DIR}"
+
+python3 -c 'import secrets; print(secrets.token_urlsafe(48))' > "${SECRETS_DIR}/session_secret"
+python3 -c 'import secrets; print(secrets.token_urlsafe(48))' > "${SECRETS_DIR}/webauthn_bootstrap_token"
+chmod 600 "${SECRETS_DIR}/session_secret" "${SECRETS_DIR}/webauthn_bootstrap_token"
 
 cat > .env <<EOF
-SESSION_SECRET=${SESSION_SECRET}
-WEBAUTHN_BOOTSTRAP_TOKEN=${BOOTSTRAP_TOKEN}
 WEBAUTHN_RP_ID=${RP_ID}
 WEBAUTHN_ORIGIN=${ORIGIN}
 WEBAUTHN_RP_NAME=Codex Container Server
 EOF
-
 chmod 600 .env
-echo "Created .env with mode 600."
-echo "Do not commit or print the secrets in this file."
+
+echo "Created .env plus read-only container secret source files."
+echo "Secret values were not printed."
+echo "For first-key registration, read the bootstrap token locally from:"
+echo "  ${SECRETS_DIR}/webauthn_bootstrap_token"
