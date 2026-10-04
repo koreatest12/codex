@@ -7,6 +7,7 @@ ENV PATH="/opt/venv/bin:${PATH}"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates curl nginx python3 python3-venv supervisor \
+       openjdk-21-jdk-headless maven \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/app
@@ -20,6 +21,15 @@ COPY app/ /opt/app/
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/codex.conf /etc/supervisor/conf.d/codex.conf
 COPY docker/entrypoint.sh /usr/local/bin/codex-entrypoint
+
+# Java 21 / javac / Maven integration.  Building here proves that all three
+# toolchain components work in the final Ubuntu container image.
+COPY java-biff-planner/ /opt/java-biff-planner/
+RUN java -version \
+    && javac -version \
+    && mvn -version \
+    && mvn -B -ntp -f /opt/java-biff-planner/pom.xml clean package \
+    && java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar toolchain
 
 RUN mkdir -p /data \
     && chmod 0755 /usr/local/bin/codex-entrypoint \

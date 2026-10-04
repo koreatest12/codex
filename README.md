@@ -159,3 +159,35 @@ chmod +x scripts/security-attack-simulation.sh
 ```
 
 The simulation uses the configured canary/server secrets only for comparison and does not print them. It verifies that common unauthenticated HTTP requests, logs, process environment output, and Docker environment metadata do not disclose those values.
+
+
+## BIFF 2026 itinerary and Java/Maven toolchain
+
+This repository also contains the consolidated 2026 Busan International Film Festival itinerary:
+
+- [Final itinerary](docs/biff-2026/ITINERARY.md)
+- [Food and coffee guide](docs/biff-2026/FOOD_AND_COFFEE.md)
+- [Official/source checklist](docs/biff-2026/SOURCES.md)
+
+A Java 21 command-line planner is available under `java-biff-planner/`.
+
+Build and run:
+
+```bash
+chmod +x scripts/verify-java-toolchain.sh
+./scripts/verify-java-toolchain.sh
+
+java -jar java-biff-planner/target/biff-planner-1.0.0.jar all
+```
+
+The Docker image now installs:
+
+- OpenJDK 21 JDK
+- `java`
+- `javac`
+- Maven
+- the precompiled BIFF planner JAR under `/opt/java-biff-planner/target/`
+
+GitHub Actions verifies Java 21, the compiler, Maven, the Maven package build, the CLI smoke test, and the same toolchain again inside the final Ubuntu container.
+
+The itinerary intentionally omits reservation IDs, personal contact information, and other secrets even though the repository is public.
