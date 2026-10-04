@@ -19,8 +19,10 @@ RUN python3 -m venv /opt/venv \
 COPY app/ /opt/app/
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/codex.conf /etc/supervisor/conf.d/codex.conf
+COPY docker/entrypoint.sh /usr/local/bin/codex-entrypoint
 
 RUN mkdir -p /data \
+    && chmod 0755 /usr/local/bin/codex-entrypoint \
     && chown -R www-data:www-data /data /opt/app
 
 VOLUME ["/data"]
@@ -30,4 +32,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=8s --retries=3 \
   CMD curl -fsS http://127.0.0.1:8080/healthz || exit 1
 
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/codex.conf"]
+CMD ["/usr/local/bin/codex-entrypoint"]
