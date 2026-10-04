@@ -1,0 +1,44 @@
+name: Latest Linux Image
+
+on:
+  push:
+    branches:
+      - main
+      - feat/latest-linux-image
+    paths:
+      - ".github/workflows/latest-linux-image.yml"
+      - "scripts/run-latest-linux.sh"
+      - "README.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/latest-linux-image.yml"
+      - "scripts/run-latest-linux.sh"
+      - "README.md"
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  pull-and-run:
+    name: Pull and run ubuntu:latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LINUX_IMAGE: ubuntu:latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Show Docker version
+        run: docker version
+
+      - name: Pull latest Linux image and run smoke test
+        run: |
+          chmod +x scripts/run-latest-linux.sh
+          ./scripts/run-latest-linux.sh
