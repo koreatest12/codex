@@ -1,128 +1,136 @@
 # codex
 
-Latest Ubuntu image download, container server build, and runtime verification automation.
+Ubuntu container server with FIDO2/WebAuthn hardware security-key authentication.
 
-## Architecture
+## Security model
 
-The repository now performs the full container-server flow:
+The web server is protected by WebAuthn rather than a password fallback.
 
-1. Pull the official `ubuntu:latest` base image.
-2. Verify the Linux image and print OS/architecture/kernel information.
-3. Build a new Ubuntu-based Nginx server image from `Dockerfile`.
-4. Start the server container.
-5. Verify `/healthz`.
-6. Verify the web page response.
-7. Keep the container running locally, or clean it up automatically in CI.
+- FIDO2/WebAuthn security-key authentication is required for protected access.
+- User verification is required for registration and login.
+- The first key requires a high-entropy bootstrap token.
+- After the first key is registered, the bootstrap token alone cannot add more keys.
+- Additional backup keys require an authenticated WebAuthn session.
+- Credential public keys and signature counters are stored in a persistent SQLite database.
+- Non-localhost WebAuthn origins must use HTTPS.
+- Sessions use HttpOnly and SameSite=Strict cookies; HTTPS sessions also use Secure cookies.
+- Nginx rate-limits authentication API calls.
+- The container binds to localhost by default, reducing accidental public exposure.
 
-## Container server
+The WebAuthn server uses `webauthn==3.0.1`, Flask `3.1.3`, and Gunicorn `26.2.0`.
 
-Default values:
+## Initial security-key setup
 
-- Base image: `ubuntu:latest`
-- Server image: `codex-linux-server:latest`
-- Container name: `codex-linux-server`
-- Container port: `8080`
-- Local bind address: `127.0.0.1`
-- Local URL: `http://127.0.0.1:8080`
-- Health check: `http://127.0.0.1:8080/healthz`
+Generate a local `.env` file. Real secrets are intentionally never stored in Git.
 
-The image installs Nginx, curl, and CA certificates on top of the current Ubuntu base image.
-
-## Build and deploy locally
-
-Requirements:
-
-- Docker
-- Bash
-
-Run the complete download/build/start/verify flow:
+Localhost:
 
 ```bash
-chmod +x scripts/deploy-container-server.sh
-./scripts/deploy-container-server.sh
+chmod +x scripts/generate-security-env.sh
+./scripts/generate-security-env.sh localhost http://localhost:8080
 ```
 
-After successful deployment:
-
-```text
-http://127.0.0.1:8080
-```
-
-Check health:
+Real domain:
 
 ```bash
-curl http://127.0.0.1:8080/healthz
+./scripts/generate-security-env.sh server.example.com https://server.example.com
 ```
 
-Expected response:
+For a non-localhost domain, terminate TLS with an HTTPS reverse proxy/load balancer and keep this container bound to localhost.
 
-```text
-ok
-```
-
-## Docker Compose
-
-Build and run persistently:
+Then start the server:
 
 ```bash
 docker compose up -d --build
 ```
 
-Check status:
+Open the exact URL configured in `WEBAUTHN_ORIGIN`. For the first registration only, enter the `WEBAUTHN_BOOTSTRAP_TOKEN` from the server's `.env` file and register your hardware security key.
+
+After login, use **백업 보안키 추가** to register a second hardware key. Keeping two separate keys is strongly recommended to avoid lockout.
+
+## Architecture
+
+1. Pull the official `ubuntu:latest` base image.
+2. Build an Ubuntu image with Nginx, Gunicorn, Flask, and WebAuthn verification.
+3. Nginx listens on container port 8080.
+4. Gunicorn serves the WebAuthn application internally on 127.0.0.1:8000.
+5. WebAuthn credentials are persisted under `/data/webauthn.db`.
+6. Docker health checks verify the complete Nginx-to-application path.
+7. GitHub Actions verifies the security gate, status endpoint, and response security headers.
+
+## Docker Compose
+
+Start:
+
+```bash
+docker compose up -d --build
+```
+
+Status:
 
 ```bash
 docker compose ps
 ```
 
-View logs:
+Logs:
 
 ```bash
 docker compose logs -f
 ```
 
-Stop the server:
+Stop:
 
 ```bash
 docker compose down
 ```
 
-## Customize
+The named `security-data` volume persists registered credential public keys when the container is recreated.
 
-Use another Ubuntu/Linux image:
+## Script deployment
+
+If you prefer the deployment script, export the required variables first:
 
 ```bash
-LINUX_IMAGE=ubuntu:rolling ./scripts/deploy-container-server.sh
+set -a
+source .env
+set +a
+chmod +x scripts/deploy-container-server.sh
+./scripts/deploy-container-server.sh
 ```
 
-Change the host port:
+Default local URL:
 
-```bash
-HOST_PORT=9090 ./scripts/deploy-container-server.sh
+```text
+http://127.0.0.1:8080
 ```
 
-Change the built image name:
+Health endpoint:
 
 ```bash
-SERVER_IMAGE=my-linux-server:latest ./scripts/deploy-container-server.sh
+curl http://127.0.0.1:8080/healthz
 ```
 
-## Base image smoke test only
+Security status endpoint:
 
 ```bash
-chmod +x scripts/run-latest-linux.sh
-./scripts/run-latest-linux.sh
+curl http://127.0.0.1:8080/api/security/status
 ```
 
 ## GitHub Actions
 
-The `Latest Linux Image and Container Server` workflow automatically:
+The workflow automatically:
 
 1. Pulls `ubuntu:latest`.
 2. Runs the base Linux smoke test.
-3. Builds the Nginx server image.
-4. Starts the server container.
-5. Checks the health endpoint.
-6. Checks the web page.
-7. Confirms the final server image was built successfully.
+3. Builds the WebAuthn-protected server image.
+4. Creates an ephemeral CI secret and bootstrap token at runtime.
+5. Starts the server container.
+6. Confirms `/healthz`.
+7. Confirms that the unauthenticated page requires a security key.
+8. Confirms the WebAuthn status API is enabled.
+9. Confirms security response headers.
+10. Confirms the final image was built successfully.
 
-The workflow runs on relevant pushes and pull requests, can be started manually, and performs a weekly refresh/build verification.
+CI cannot physically press a hardware key, so cryptographic registration/login must be completed interactively in a browser after deployment.
+
+See [SECURITY.md](SECURITY.md) for deployment and recovery requirements.
