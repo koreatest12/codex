@@ -73,7 +73,7 @@ docker run -d \
 
 echo "==> Waiting for /healthz"
 for attempt in {1..45}; do
-  if docker exec "${CONTAINER_NAME}" curl -fsS http://127.0.0.1:8080/healthz >/dev/null; then
+  if docker exec "${CONTAINER_NAME}" curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; then
     echo "Container health endpoint: OK"
     break
   fi
