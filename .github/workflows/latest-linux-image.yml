@@ -1,20 +1,28 @@
-name: Latest Linux Image
+name: Latest Linux Image and Container Server
 
 on:
   push:
     branches:
       - main
-      - feat/latest-linux-image
+      - feat/container-server-build
     paths:
       - ".github/workflows/latest-linux-image.yml"
-      - "scripts/run-latest-linux.sh"
+      - "Dockerfile"
+      - "compose.yaml"
+      - ".dockerignore"
+      - "docker/**"
+      - "scripts/**"
       - "README.md"
   pull_request:
     branches:
       - main
     paths:
       - ".github/workflows/latest-linux-image.yml"
-      - "scripts/run-latest-linux.sh"
+      - "Dockerfile"
+      - "compose.yaml"
+      - ".dockerignore"
+      - "docker/**"
+      - "scripts/**"
       - "README.md"
   workflow_dispatch:
   schedule:
@@ -24,12 +32,15 @@ permissions:
   contents: read
 
 jobs:
-  pull-and-run:
-    name: Pull and run ubuntu:latest
+  build-and-run:
+    name: Pull Ubuntu, build server, and verify container
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       LINUX_IMAGE: ubuntu:latest
+      SERVER_IMAGE: codex-linux-server:ci
+      CONTAINER_NAME: codex-linux-server-ci
+      HOST_PORT: "8080"
 
     steps:
       - name: Check out repository
@@ -38,7 +49,17 @@ jobs:
       - name: Show Docker version
         run: docker version
 
-      - name: Pull latest Linux image and run smoke test
+      - name: Pull latest Linux image and run base smoke test
         run: |
           chmod +x scripts/run-latest-linux.sh
           ./scripts/run-latest-linux.sh
+
+      - name: Build and start container server
+        env:
+          CLEANUP_AFTER_TEST: "true"
+        run: |
+          chmod +x scripts/deploy-container-server.sh
+          ./scripts/deploy-container-server.sh
+
+      - name: Show built server image
+        run: docker image inspect "${SERVER_IMAGE}" --format 'Image={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
