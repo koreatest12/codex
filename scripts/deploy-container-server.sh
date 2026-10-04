@@ -73,7 +73,26 @@ done
 echo "==> Verifying WebAuthn protection"
 docker exec "${CONTAINER_NAME}" curl -fsS http://127.0.0.1:8080/ | grep -q "Security Key Required"
 docker exec "${CONTAINER_NAME}" curl -fsS http://127.0.0.1:8080/api/security/status | grep -q '"security_key_required":true'
-docker exec "${CONTAINER_NAME}" sh -lc "curl -fsSI http://127.0.0.1:8080/ | tr -d '\r' | grep -qi '^X-Frame-Options: DENY$'"
+docker exec "${CONTAINER_NAME}" sh -lc "curl -fsSI http://127.0.0.1:8080/ | tr -d '\r' | grep -qi '^X-Frame-Options: DENY
+echo "==> Container status"
+docker ps --filter "name=^${CONTAINER_NAME}$"
+
+echo
+echo "Container server deployment: OK"
+echo "WebAuthn security-key gate: ENABLED"
+echo "Local URL: http://127.0.0.1:${HOST_PORT}"
+"
+
+echo "==> Verifying bootstrap registration controls"
+docker exec "${CONTAINER_NAME}" sh -lc '
+  code="$(curl -sS -o /tmp/no-bootstrap.json -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "{}" http://127.0.0.1:8080/api/security/register/options)"
+  test "$code" = "403"
+'
+docker exec "${CONTAINER_NAME}" sh -lc '
+  code="$(curl -sS -o /tmp/bootstrap-options.json -w "%{http_code}" -X POST -H "Content-Type: application/json" -H "X-Bootstrap-Token: $WEBAUTHN_BOOTSTRAP_TOKEN" -d "{}" http://127.0.0.1:8080/api/security/register/options)"
+  test "$code" = "200"
+  grep -q "\"challenge\"" /tmp/bootstrap-options.json
+'
 
 echo "==> Container status"
 docker ps --filter "name=^${CONTAINER_NAME}$"
