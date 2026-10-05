@@ -136,6 +136,29 @@ class DataManagerTests(unittest.TestCase):
         )
         self.assertEqual("vault-record-id", row["data"]["private_ref"])
 
+    def test_import_preserves_existing_description_when_omitted(self):
+        current = self.manager.get_dataset("biff-2026")
+        self.assertEqual("public itinerary data", current["description"])
+
+        result = self.manager.import_bundle(
+            {
+                "schema_version": 1,
+                "datasets": [
+                    {
+                        "id": "biff-2026",
+                        "records": [
+                            {"id": "new-record", "data": {"value": 1}},
+                        ],
+                    }
+                ],
+            }
+        )
+
+        after = self.manager.get_dataset("biff-2026")
+        self.assertEqual("public itinerary data", after["description"])
+        self.assertEqual(0, result["updated_datasets"])
+        self.assertEqual(1, result["changed_records"])
+
     def test_export_and_import(self):
         self.manager.put_record("biff-2026", "movie", {"title": "자필"})
         bundle = self.manager.export_bundle()
