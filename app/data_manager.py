@@ -154,24 +154,67 @@ class DataManager:
                 """
             )
 
+    @staticmethod
+    def _validate_description(description: str) -> str:
+        normalized = (description or "").strip()
+        if len(normalized) > 500:
+            raise DataManagerError("description must be at most 500 characters")
+        _validate_payload({"description": normalized})
+        return normalized
+
     def create_dataset(self, dataset_id: str, description: str = "") -> dict[str, Any]:
         dataset_id = _validate_id(dataset_id, "dataset_id")
-        description = (description or "").strip()
-        if len(description) > 500:
-            raise DataManagerError("description must be at most 500 characters")
-        _validate_payload({"description": description})
+        description = self._validate_description(description)
         now = _utc_now()
         try:
             with self._connect() as connection:
                 connection.execute(
                     """
-                    INSERT INTO managed_datasets(dataset_id, description, revision, created_at, updated_at)
-                    VALUES (?, ?, 0, ?, ?)
+                    INSERT INTO managed_datasets(
+                        dataset_id, description, revision, created_at, updated_at
+                    ) VALUES (?, ?, 0, ?, ?)
                     """,
                     (dataset_id, description, now, now),
                 )
         except sqlite3.IntegrityError as exc:
             raise RevisionConflict(f"dataset already exists: {dataset_id}") from exc
+        return self.get_dataset(dataset_id)
+
+    def update_dataset(
+        self,
+        dataset_id: str,
+        description: str,
+        expected_revision: int,
+    ) -> dict[str, Any]:
+        dataset_id = _validate_id(dataset_id, "dataset_id")
+        description = self._validate_description(description)
+        now = _utc_now()
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            current = connection.execute(
+                """
+                SELECT description, revision
+                FROM managed_datasets
+                WHERE dataset_id = ?
+                """,
+                (dataset_id,),
+            ).fetchone()
+            if current is None:
+                raise NotFound(f"dataset not found: {dataset_id}")
+            current_revision = int(current["revision"])
+            if expected_revision != current_revision:
+                raise RevisionConflict(
+                    f"expected revision {expected_revision}, current revision {current_revision}"
+                )
+            if current["description"] != description:
+                connection.execute(
+                    """
+                    UPDATE managed_datasets
+                    SET description = ?, revision = revision + 1, updated_at = ?
+                    WHERE dataset_id = ?
+                    """,
+                    (description, now, dataset_id),
+                )
         return self.get_dataset(dataset_id)
 
     def list_datasets(self) -> list[dict[str, Any]]:
@@ -207,8 +250,14 @@ class DataManager:
         return dict(row)
 
     def list_records(self, dataset_id: str) -> list[dict[str, Any]]:
-        self.get_dataset(dataset_id)
+        dataset_id = _validate_id(dataset_id, "dataset_id")
         with self._connect() as connection:
+            dataset = connection.execute(
+                "SELECT 1 FROM managed_datasets WHERE dataset_id = ?",
+                (dataset_id,),
+            ).fetchone()
+            if dataset is None:
+                raise NotFound(f"dataset not found: {dataset_id}")
             rows = connection.execute(
                 """
                 SELECT record_id, payload, checksum, revision, created_at, updated_at
@@ -236,6 +285,125 @@ class DataManager:
             raise NotFound(f"record not found: {dataset_id}/{record_id}")
         return self._record_dict(dataset_id, row)
 
+    @staticmethod
+    def _history_exists(
+        connection: sqlite3.Connection,
+        dataset_id: str,
+        record_id: str,
+    ) -> bool:
+        row = connection.execute(
+            """
+            SELECT 1
+            FROM managed_history
+            WHERE dataset_id = ? AND record_id = ?
+            LIMIT 1
+            """,
+            (dataset_id, record_id),
+        ).fetchone()
+        return row is not None
+
+    def _put_record_tx(
+        self,
+        connection: sqlite3.Connection,
+        dataset_id: str,
+        record_id: str,
+        canonical: str,
+        digest: str,
+        expected_revision: int | None,
+        now: str,
+    ) -> tuple[dict[str, Any], bool]:
+        dataset = connection.execute(
+            "SELECT revision FROM managed_datasets WHERE dataset_id = ?",
+            (dataset_id,),
+        ).fetchone()
+        if dataset is None:
+            raise NotFound(f"dataset not found: {dataset_id}")
+
+        current = connection.execute(
+            """
+            SELECT record_id, payload, checksum, revision, created_at, updated_at
+            FROM managed_records
+            WHERE dataset_id = ? AND record_id = ?
+            """,
+            (dataset_id, record_id),
+        ).fetchone()
+
+        if current is None:
+            if self._history_exists(connection, dataset_id, record_id):
+                raise RevisionConflict(
+                    f"record id {dataset_id}/{record_id} was deleted and cannot be reused"
+                )
+            current_revision = 0
+        else:
+            current_revision = int(current["revision"])
+
+        if expected_revision is not None and expected_revision != current_revision:
+            raise RevisionConflict(
+                f"expected revision {expected_revision}, current revision {current_revision}"
+            )
+
+        if current is not None and current["checksum"] == digest:
+            return self._record_dict(dataset_id, current), False
+
+        new_revision = current_revision + 1
+        created_at = current["created_at"] if current else now
+        operation = "create" if current is None else "update"
+        connection.execute(
+            """
+            INSERT INTO managed_records(
+                dataset_id, record_id, payload, checksum, revision, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(dataset_id, record_id) DO UPDATE SET
+                payload = excluded.payload,
+                checksum = excluded.checksum,
+                revision = excluded.revision,
+                updated_at = excluded.updated_at
+            """,
+            (
+                dataset_id,
+                record_id,
+                canonical,
+                digest,
+                new_revision,
+                created_at,
+                now,
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO managed_history(
+                dataset_id, record_id, record_revision, operation,
+                payload, checksum, changed_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                dataset_id,
+                record_id,
+                new_revision,
+                operation,
+                canonical,
+                digest,
+                now,
+            ),
+        )
+        connection.execute(
+            """
+            UPDATE managed_datasets
+            SET revision = revision + 1, updated_at = ?
+            WHERE dataset_id = ?
+            """,
+            (now, dataset_id),
+        )
+        row = connection.execute(
+            """
+            SELECT record_id, payload, checksum, revision, created_at, updated_at
+            FROM managed_records
+            WHERE dataset_id = ? AND record_id = ?
+            """,
+            (dataset_id, record_id),
+        ).fetchone()
+        return self._record_dict(dataset_id, row), True
+
     def put_record(
         self,
         dataset_id: str,
@@ -250,84 +418,18 @@ class DataManager:
         canonical = _canonical_json(payload)
         digest = _checksum(canonical)
         now = _utc_now()
-
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            dataset = connection.execute(
-                "SELECT revision FROM managed_datasets WHERE dataset_id = ?",
-                (dataset_id,),
-            ).fetchone()
-            if dataset is None:
-                raise NotFound(f"dataset not found: {dataset_id}")
-
-            current = connection.execute(
-                """
-                SELECT revision, created_at, checksum
-                FROM managed_records
-                WHERE dataset_id = ? AND record_id = ?
-                """,
-                (dataset_id, record_id),
-            ).fetchone()
-
-            current_revision = int(current["revision"]) if current else 0
-            if expected_revision is not None and expected_revision != current_revision:
-                raise RevisionConflict(
-                    f"expected revision {expected_revision}, current revision {current_revision}"
-                )
-
-            if current is not None and current["checksum"] == digest:
-                return self.get_record(dataset_id, record_id)
-
-            new_revision = current_revision + 1
-            created_at = current["created_at"] if current else now
-            connection.execute(
-                """
-                INSERT INTO managed_records(
-                    dataset_id, record_id, payload, checksum, revision, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(dataset_id, record_id) DO UPDATE SET
-                    payload = excluded.payload,
-                    checksum = excluded.checksum,
-                    revision = excluded.revision,
-                    updated_at = excluded.updated_at
-                """,
-                (
-                    dataset_id,
-                    record_id,
-                    canonical,
-                    digest,
-                    new_revision,
-                    created_at,
-                    now,
-                ),
+            result, _ = self._put_record_tx(
+                connection,
+                dataset_id,
+                record_id,
+                canonical,
+                digest,
+                expected_revision,
+                now,
             )
-            connection.execute(
-                """
-                INSERT INTO managed_history(
-                    dataset_id, record_id, record_revision, operation,
-                    payload, checksum, changed_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    dataset_id,
-                    record_id,
-                    new_revision,
-                    "create" if current is None else "update",
-                    canonical,
-                    digest,
-                    now,
-                ),
-            )
-            connection.execute(
-                """
-                UPDATE managed_datasets
-                SET revision = revision + 1, updated_at = ?
-                WHERE dataset_id = ?
-                """,
-                (now, dataset_id),
-            )
-
-        return self.get_record(dataset_id, record_id)
+        return result
 
     def delete_record(
         self,
@@ -335,16 +437,29 @@ class DataManager:
         record_id: str,
         expected_revision: int | None = None,
     ) -> dict[str, Any]:
-        current = self.get_record(dataset_id, record_id)
-        if expected_revision is not None and expected_revision != current["revision"]:
-            raise RevisionConflict(
-                f"expected revision {expected_revision}, current revision {current['revision']}"
-            )
+        dataset_id = _validate_id(dataset_id, "dataset_id")
+        record_id = _validate_id(record_id, "record_id")
         now = _utc_now()
-        tombstone_revision = current["revision"] + 1
-        canonical = _canonical_json(current["data"])
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
+            current = connection.execute(
+                """
+                SELECT record_id, payload, checksum, revision, created_at, updated_at
+                FROM managed_records
+                WHERE dataset_id = ? AND record_id = ?
+                """,
+                (dataset_id, record_id),
+            ).fetchone()
+            if current is None:
+                raise NotFound(f"record not found: {dataset_id}/{record_id}")
+
+            current_revision = int(current["revision"])
+            if expected_revision is not None and expected_revision != current_revision:
+                raise RevisionConflict(
+                    f"expected revision {expected_revision}, current revision {current_revision}"
+                )
+
+            tombstone_revision = current_revision + 1
             connection.execute(
                 """
                 INSERT INTO managed_history(
@@ -356,17 +471,18 @@ class DataManager:
                     dataset_id,
                     record_id,
                     tombstone_revision,
-                    canonical,
+                    current["payload"],
                     current["checksum"],
                     now,
                 ),
             )
-            cursor = connection.execute(
-                "DELETE FROM managed_records WHERE dataset_id = ? AND record_id = ?",
+            connection.execute(
+                """
+                DELETE FROM managed_records
+                WHERE dataset_id = ? AND record_id = ?
+                """,
                 (dataset_id, record_id),
             )
-            if cursor.rowcount == 0:
-                raise NotFound(f"record not found: {dataset_id}/{record_id}")
             connection.execute(
                 """
                 UPDATE managed_datasets
@@ -375,7 +491,12 @@ class DataManager:
                 """,
                 (now, dataset_id),
             )
-        return {"deleted": True, "dataset_id": dataset_id, "record_id": record_id}
+        return {
+            "deleted": True,
+            "dataset_id": dataset_id,
+            "record_id": record_id,
+            "tombstone_revision": tombstone_revision,
+        }
 
     def history(self, dataset_id: str, record_id: str) -> list[dict[str, Any]]:
         dataset_id = _validate_id(dataset_id, "dataset_id")
@@ -413,35 +534,122 @@ class DataManager:
             ],
         }
 
-    def import_bundle(self, bundle: dict[str, Any]) -> dict[str, int]:
+    def _prepare_import_bundle(self, bundle: dict[str, Any]) -> list[dict[str, Any]]:
         if not isinstance(bundle, dict) or bundle.get("schema_version") != 1:
             raise DataManagerError("unsupported import bundle")
         datasets = bundle.get("datasets")
         if not isinstance(datasets, list):
             raise DataManagerError("import bundle datasets must be a list")
 
-        created_datasets = 0
-        upserted_records = 0
-        existing_ids = {item["dataset_id"] for item in self.list_datasets()}
+        prepared = []
+        seen_datasets: set[str] = set()
         for item in datasets:
             if not isinstance(item, dict):
                 raise DataManagerError("invalid dataset entry")
             dataset_id = _validate_id(str(item.get("id", "")), "dataset_id")
-            if dataset_id not in existing_ids:
-                self.create_dataset(dataset_id, str(item.get("description", "")))
-                existing_ids.add(dataset_id)
-                created_datasets += 1
+            if dataset_id in seen_datasets:
+                raise DataManagerError(f"duplicate dataset in import: {dataset_id}")
+            seen_datasets.add(dataset_id)
+            description = self._validate_description(str(item.get("description", "")))
             records = item.get("records", [])
             if not isinstance(records, list):
                 raise DataManagerError("records must be a list")
+
+            prepared_records = []
+            seen_records: set[str] = set()
             for record in records:
                 if not isinstance(record, dict):
                     raise DataManagerError("invalid record entry")
-                record_id = _validate_id(str(record.get("record_id", record.get("id", ""))), "record_id")
+                record_id = _validate_id(
+                    str(record.get("record_id", record.get("id", ""))),
+                    "record_id",
+                )
+                if record_id in seen_records:
+                    raise DataManagerError(
+                        f"duplicate record in import: {dataset_id}/{record_id}"
+                    )
+                seen_records.add(record_id)
                 data = record.get("data")
-                self.put_record(dataset_id, record_id, data)
-                upserted_records += 1
-        return {"created_datasets": created_datasets, "upserted_records": upserted_records}
+                if not isinstance(data, dict):
+                    raise DataManagerError(
+                        f"record payload must be a JSON object: {dataset_id}/{record_id}"
+                    )
+                canonical = _canonical_json(data)
+                prepared_records.append(
+                    {
+                        "record_id": record_id,
+                        "canonical": canonical,
+                        "checksum": _checksum(canonical),
+                    }
+                )
+            prepared.append(
+                {
+                    "dataset_id": dataset_id,
+                    "description": description,
+                    "records": prepared_records,
+                }
+            )
+        return prepared
+
+    def import_bundle(self, bundle: dict[str, Any]) -> dict[str, int]:
+        prepared = self._prepare_import_bundle(bundle)
+        now = _utc_now()
+        created_datasets = 0
+        updated_datasets = 0
+        changed_records = 0
+
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            for item in prepared:
+                dataset_id = item["dataset_id"]
+                existing = connection.execute(
+                    """
+                    SELECT description, revision
+                    FROM managed_datasets
+                    WHERE dataset_id = ?
+                    """,
+                    (dataset_id,),
+                ).fetchone()
+
+                if existing is None:
+                    connection.execute(
+                        """
+                        INSERT INTO managed_datasets(
+                            dataset_id, description, revision, created_at, updated_at
+                        ) VALUES (?, ?, 0, ?, ?)
+                        """,
+                        (dataset_id, item["description"], now, now),
+                    )
+                    created_datasets += 1
+                elif existing["description"] != item["description"]:
+                    connection.execute(
+                        """
+                        UPDATE managed_datasets
+                        SET description = ?, revision = revision + 1, updated_at = ?
+                        WHERE dataset_id = ?
+                        """,
+                        (item["description"], now, dataset_id),
+                    )
+                    updated_datasets += 1
+
+                for record in item["records"]:
+                    _, changed = self._put_record_tx(
+                        connection,
+                        dataset_id,
+                        record["record_id"],
+                        record["canonical"],
+                        record["checksum"],
+                        None,
+                        now,
+                    )
+                    if changed:
+                        changed_records += 1
+
+        return {
+            "created_datasets": created_datasets,
+            "updated_datasets": updated_datasets,
+            "changed_records": changed_records,
+        }
 
     def verify(self, dataset_id: str | None = None) -> dict[str, Any]:
         datasets = [self.get_dataset(dataset_id)] if dataset_id else self.list_datasets()

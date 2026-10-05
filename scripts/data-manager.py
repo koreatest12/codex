@@ -34,6 +34,11 @@ def main() -> None:
     create.add_argument("dataset_id")
     create.add_argument("--description", default="")
 
+    update_dataset = sub.add_parser("update-dataset")
+    update_dataset.add_argument("dataset_id")
+    update_dataset.add_argument("--description", required=True)
+    update_dataset.add_argument("--expected-revision", required=True, type=int)
+
     listing = sub.add_parser("list")
     listing.add_argument("dataset_id")
 
@@ -78,6 +83,12 @@ def main() -> None:
             result = manager.list_datasets()
         elif args.command == "create-dataset":
             result = manager.create_dataset(args.dataset_id, args.description)
+        elif args.command == "update-dataset":
+            result = manager.update_dataset(
+                args.dataset_id,
+                args.description,
+                args.expected_revision,
+            )
         elif args.command == "list":
             result = manager.list_records(args.dataset_id)
         elif args.command == "get":

@@ -24,14 +24,15 @@ Storage: `/data/managed-data.db` by default.
 
 Features:
 
-- create/list datasets
+- create/list/update datasets
 - create/update/delete records
 - optimistic revision checks with `expected_revision`
 - SHA-256 integrity checksums
 - immutable record history/audit snapshots
 - JSON export/import
 - full integrity verification
-- atomic SQLite transactions
+- atomic SQLite transactions, including all-or-nothing bundle import
+- record IDs cannot be reused after deletion, preventing stale revision reuse
 - rejection of likely reservation/contact fields from the public store
 - `private_ref` / `private_refs` fields for linking to the encrypted vault without copying secrets
 
@@ -40,6 +41,7 @@ Features:
 ```bash
 codex-data-manager init
 codex-data-manager create-dataset biff-2026 --description "public itinerary"
+codex-data-manager update-dataset biff-2026 --description "updated itinerary" --expected-revision 0
 codex-data-manager put biff-2026 opening --json '{"date":"2026-10-06","time":"18:00"}'
 codex-data-manager list biff-2026
 codex-data-manager history biff-2026 opening
@@ -68,6 +70,7 @@ All `/api/data/*` endpoints require an authenticated WebAuthn session.
 - `GET /api/data/datasets`
 - `POST /api/data/datasets`
 - `GET /api/data/datasets/<dataset_id>`
+- `PUT /api/data/datasets/<dataset_id>`
 - `GET /api/data/datasets/<dataset_id>/records`
 - `POST /api/data/datasets/<dataset_id>/records`
 - `GET /api/data/datasets/<dataset_id>/records/<record_id>`

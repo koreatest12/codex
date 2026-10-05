@@ -38,8 +38,11 @@ on:
       - "scripts/**"
       - "java-biff-planner/**"
       - "docs/biff-2026/**"
+      - "docs/DATA_MANAGEMENT.md"
       - "SECURITY.md"
       - "README.md"
+      - ".github/dependabot.yml"
+      - "data/**"
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 1"

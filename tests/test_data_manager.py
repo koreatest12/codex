@@ -78,6 +78,56 @@ class DataManagerTests(unittest.TestCase):
                 {"note": "test@example.com"},
             )
 
+    def test_delete_preserves_generation_and_prevents_id_reuse(self):
+        row = self.manager.put_record("biff-2026", "deleted", {"value": 1})
+        deleted = self.manager.delete_record(
+            "biff-2026",
+            "deleted",
+            expected_revision=row["revision"],
+        )
+        self.assertEqual(2, deleted["tombstone_revision"])
+        with self.assertRaises(RevisionConflict):
+            self.manager.put_record("biff-2026", "deleted", {"value": 2})
+        revisions = [
+            item["record_revision"]
+            for item in self.manager.history("biff-2026", "deleted")
+        ]
+        self.assertEqual([1, 2], revisions)
+
+    def test_import_is_atomic_when_late_record_is_invalid(self):
+        bundle = {
+            "schema_version": 1,
+            "datasets": [
+                {
+                    "id": "atomic-new",
+                    "description": "test",
+                    "records": [
+                        {"id": "good", "data": {"value": 1}},
+                        {"id": "bad", "data": {"note": "contact person@example.com"}},
+                    ],
+                }
+            ],
+        }
+        with self.assertRaises(SensitiveDataError):
+            self.manager.import_bundle(bundle)
+        dataset_ids = {item["dataset_id"] for item in self.manager.list_datasets()}
+        self.assertNotIn("atomic-new", dataset_ids)
+
+    def test_update_dataset_requires_matching_revision(self):
+        current = self.manager.get_dataset("biff-2026")
+        updated = self.manager.update_dataset(
+            "biff-2026",
+            "updated public itinerary",
+            expected_revision=current["revision"],
+        )
+        self.assertEqual("updated public itinerary", updated["description"])
+        with self.assertRaises(RevisionConflict):
+            self.manager.update_dataset(
+                "biff-2026",
+                "stale",
+                expected_revision=current["revision"],
+            )
+
     def test_private_ref_is_allowed(self):
         row = self.manager.put_record(
             "biff-2026",
@@ -95,6 +145,7 @@ class DataManagerTests(unittest.TestCase):
         second.init_schema()
         result = second.import_bundle(bundle)
         self.assertEqual(1, result["created_datasets"])
+        self.assertEqual(1, result["changed_records"])
         self.assertEqual("자필", second.get_record("biff-2026", "movie")["data"]["title"])
 
 
