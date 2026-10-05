@@ -19,6 +19,8 @@ RUN python3 -m venv /opt/venv \
     && /opt/venv/bin/python -c 'from cryptography.hazmat.primitives.ciphers.aead import AESGCM; print("AES-256-GCM support: OK")'
 
 COPY app/ /opt/app/
+COPY scripts/data-manager.py /usr/local/bin/codex-data-manager
+COPY data/biff-2026/seed.json /opt/biff-data/seed.json
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/codex.conf /etc/supervisor/conf.d/codex.conf
 COPY docker/entrypoint.sh /usr/local/bin/codex-entrypoint
@@ -33,7 +35,11 @@ RUN java -version \
     && java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar toolchain
 
 RUN mkdir -p /data \
-    && chmod 0755 /usr/local/bin/codex-entrypoint \
+    && chmod 0755 /usr/local/bin/codex-entrypoint /usr/local/bin/codex-data-manager \
+    && /opt/venv/bin/python /usr/local/bin/codex-data-manager --db /tmp/managed-data.db init \
+    && /opt/venv/bin/python /usr/local/bin/codex-data-manager --db /tmp/managed-data.db import /opt/biff-data/seed.json \
+    && /opt/venv/bin/python /usr/local/bin/codex-data-manager --db /tmp/managed-data.db verify \
+    && rm -f /tmp/managed-data.db \
     && chown -R www-data:www-data /data /opt/app
 
 VOLUME ["/data"]

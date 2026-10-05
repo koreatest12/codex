@@ -21,6 +21,8 @@ on:
       - "docs/biff-2026/**"
       - "SECURITY.md"
       - "README.md"
+      - ".github/dependabot.yml"
+      - "data/**"
   pull_request:
     branches:
       - main
@@ -77,13 +79,21 @@ jobs:
       - name: Validate shell and Python syntax
         run: |
           bash -n scripts/*.sh docker/entrypoint.sh
-          python3 -m py_compile app/server.py app/privacy.py scripts/rotate-data-encryption-key.py
+          python3 -m py_compile app/server.py app/privacy.py app/data_manager.py scripts/rotate-data-encryption-key.py scripts/data-manager.py
 
       - name: Run Python privacy tests
         run: |
           python3 -m venv .ci-python
           .ci-python/bin/pip install --disable-pip-version-check -r requirements.txt
           PYTHONPATH=app .ci-python/bin/python -m unittest discover -s tests -v
+
+      - name: Verify versioned data manager
+        run: |
+          python3 scripts/data-manager.py --db /tmp/managed-data.db init
+          python3 scripts/data-manager.py --db /tmp/managed-data.db import data/biff-2026/seed.json
+          python3 scripts/data-manager.py --db /tmp/managed-data.db verify
+          python3 scripts/data-manager.py --db /tmp/managed-data.db export --output /tmp/managed-data-backup.json
+          test -s /tmp/managed-data-backup.json
 
       - name: Verify Java compiler, Maven, and BIFF planner
         run: |
