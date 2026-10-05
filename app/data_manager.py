@@ -159,6 +159,7 @@ class DataManager:
         description = (description or "").strip()
         if len(description) > 500:
             raise DataManagerError("description must be at most 500 characters")
+        _validate_payload({"description": description})
         now = _utc_now()
         try:
             with self._connect() as connection:
@@ -261,7 +262,7 @@ class DataManager:
 
             current = connection.execute(
                 """
-                SELECT revision, created_at
+                SELECT revision, created_at, checksum
                 FROM managed_records
                 WHERE dataset_id = ? AND record_id = ?
                 """,
@@ -273,6 +274,9 @@ class DataManager:
                 raise RevisionConflict(
                     f"expected revision {expected_revision}, current revision {current_revision}"
                 )
+
+            if current is not None and current["checksum"] == digest:
+                return self.get_record(dataset_id, record_id)
 
             new_revision = current_revision + 1
             created_at = current["created_at"] if current else now

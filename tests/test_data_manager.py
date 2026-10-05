@@ -39,6 +39,21 @@ class DataManagerTests(unittest.TestCase):
         self.assertEqual(2, len(self.manager.history("biff-2026", "opening")))
         self.assertTrue(self.manager.verify()["ok"])
 
+    def test_identical_update_is_idempotent(self):
+        first = self.manager.put_record("biff-2026", "same", {"value": 1})
+        second = self.manager.put_record(
+            "biff-2026",
+            "same",
+            {"value": 1},
+            expected_revision=1,
+        )
+        self.assertEqual(first["revision"], second["revision"])
+        self.assertEqual(1, len(self.manager.history("biff-2026", "same")))
+
+    def test_dataset_description_rejects_contact_data(self):
+        with self.assertRaises(SensitiveDataError):
+            self.manager.create_dataset("private-description", "owner test@example.com")
+
     def test_optimistic_revision_conflict(self):
         self.manager.put_record("biff-2026", "x", {"value": 1})
         with self.assertRaises(RevisionConflict):

@@ -783,6 +783,8 @@ def data_update_record(dataset_id: str, record_id: str):
         return denied
     payload = request.get_json(silent=True) or {}
     expected = payload.get("expected_revision")
+    if expected is None:
+        return jsonify({"error": "expected_revision is required for updates"}), 428
     try:
         result = DATA_MANAGER.put_record(
             dataset_id,
@@ -804,6 +806,8 @@ def data_delete_record(dataset_id: str, record_id: str):
         return denied
     payload = request.get_json(silent=True) or {}
     expected = payload.get("expected_revision")
+    if expected is None:
+        return jsonify({"error": "expected_revision is required for deletes"}), 428
     try:
         result = DATA_MANAGER.delete_record(
             dataset_id,
