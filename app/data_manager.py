@@ -73,7 +73,7 @@ def _validate_payload(value: Any, path: str = "$") -> None:
         return
 
     if isinstance(value, str):
-        if _EMAIL_RE.fullmatch(value.strip()) or _KR_PHONE_RE.search(value):
+        if _EMAIL_RE.search(value.strip()) or _KR_PHONE_RE.search(value):
             raise SensitiveDataError(
                 f"{path}: detected contact data; store it in the encrypted private-data vault"
             )
