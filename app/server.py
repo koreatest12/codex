@@ -564,6 +564,57 @@ def create_private_value():
     ), 201
 
 
+@app.patch("/api/private-values/<record_id>")
+def update_private_value(record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not ({"label", "value"} & payload.keys()):
+        return jsonify({"error": "label or value is required"}), 400
+
+    row = private_value_row(record_id)
+    if row is None:
+        return jsonify({"error": "private value not found"}), 404
+
+    try:
+        current = PRIVACY_CIPHER.decrypt(
+            record_id, row["kind"], bytes(row["nonce"]), bytes(row["ciphertext"])
+        )
+    except Exception:
+        app.logger.error("Unable to decrypt private value record id=%s", record_id)
+        return jsonify({"error": "stored private value cannot be decrypted"}), 409
+
+    label = str(payload["label"]).strip() if "label" in payload else current["label"]
+    value = str(payload["value"]).strip() if "value" in payload else current["value"]
+    if not label or len(label) > 80:
+        return jsonify({"error": "label must be 1-80 characters"}), 400
+    if not value or len(value) > 512:
+        return jsonify({"error": "value must be 1-512 characters"}), 400
+
+    nonce, ciphertext = PRIVACY_CIPHER.encrypt(record_id, row["kind"], label, value)
+    with db() as connection:
+        connection.execute(
+            """
+            UPDATE private_values
+            SET nonce = ?, ciphertext = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE record_id = ?
+            """,
+            (sqlite3.Binary(nonce), sqlite3.Binary(ciphertext), record_id),
+        )
+
+    return jsonify(
+        {
+            "id": record_id,
+            "kind": row["kind"],
+            "label": label,
+            "masked_value": mask_value(row["kind"], value),
+            "encrypted_at_rest": True,
+        }
+    )
+
+
 @app.delete("/api/private-values/<record_id>")
 def delete_private_value(record_id: str):
     denied = require_authenticated()

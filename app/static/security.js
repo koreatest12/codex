@@ -256,7 +256,30 @@ async function loadPrivateValues() {
           setStatus(error.message, true);
         }
       });
-      actions.append(reveal, remove);
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "secondary compact";
+      edit.textContent = "수정";
+      edit.addEventListener("click", async () => {
+        const label = window.prompt("표시 이름", item.label);
+        if (label === null) return;
+        const value = window.prompt("새 원문 값 (비워 두면 기존 값 유지)", "");
+        if (value === null) return;
+        const body = { label };
+        if (value.trim()) body.value = value;
+        try {
+          await jsonFetch(`/api/private-values/${item.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          setStatus("암호화 개인정보 항목을 수정했습니다.");
+          await loadPrivateValues();
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      });
+      actions.append(reveal, edit, remove);
       row.append(text, actions);
       container.appendChild(row);
     });
