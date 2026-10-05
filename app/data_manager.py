@@ -550,7 +550,12 @@ class DataManager:
             if dataset_id in seen_datasets:
                 raise DataManagerError(f"duplicate dataset in import: {dataset_id}")
             seen_datasets.add(dataset_id)
-            description = self._validate_description(str(item.get("description", "")))
+            description_present = "description" in item
+            description = (
+                self._validate_description(str(item.get("description", "")))
+                if description_present
+                else ""
+            )
             records = item.get("records", [])
             if not isinstance(records, list):
                 raise DataManagerError("records must be a list")
@@ -586,6 +591,7 @@ class DataManager:
                 {
                     "dataset_id": dataset_id,
                     "description": description,
+                    "description_present": description_present,
                     "records": prepared_records,
                 }
             )
@@ -621,7 +627,10 @@ class DataManager:
                         (dataset_id, item["description"], now, now),
                     )
                     created_datasets += 1
-                elif existing["description"] != item["description"]:
+                elif (
+                    item["description_present"]
+                    and existing["description"] != item["description"]
+                ):
                     connection.execute(
                         """
                         UPDATE managed_datasets
