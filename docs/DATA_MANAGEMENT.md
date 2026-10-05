@@ -16,7 +16,7 @@ This repository now separates two data classes:
 
 The schedule is weekly on Monday morning in `Asia/Seoul`. Minor/patch updates are grouped to reduce PR noise; major updates remain separate for review.
 
-A separate Dependency Review workflow rejects pull requests that introduce known **high** or **critical** severity dependency vulnerabilities.
+GitHub's Dependency Review action requires the repository Dependency Graph to be enabled. It is intentionally not made a required workflow here because this repository currently reports Dependency Review as unsupported. Dependabot version updates remain active from the configuration file; enable Dependency Graph in repository security settings before adding Dependency Review as a blocking check.
 
 ## Versioned data manager
 

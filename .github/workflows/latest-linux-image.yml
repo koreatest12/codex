@@ -22,7 +22,6 @@ on:
       - "SECURITY.md"
       - "README.md"
       - ".github/dependabot.yml"
-      - ".github/workflows/dependency-review.yml"
       - "data/**"
   pull_request:
     branches:
