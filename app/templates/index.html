@@ -13,6 +13,7 @@
 
     {% if authenticated %}
       <h2>보안키 인증 완료</h2>
+      <p><a href="{{ url_for('game') }}">🍳 분식 러시 게임 실행</a></p>
       <p>보호된 컨테이너 서버에 접근했습니다.</p>
       <div class="actions">
         <button id="add-key" type="button">백업 보안키 추가</button>

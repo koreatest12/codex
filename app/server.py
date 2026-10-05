@@ -5,11 +5,11 @@ import json
 import os
 import secrets
 import sqlite3
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, Response, jsonify, render_template, request, session
+from flask import Flask, Response, jsonify, render_template, request, session, redirect
 
 from privacy import PrivacyCipher, mask_value, validate_kind
 from data_manager import DataManager, DataManagerError, NotFound, RevisionConflict
@@ -319,6 +319,28 @@ def index():
         authenticated=session.get("authenticated") is True,
         registered=credential_count() > 0,
     )
+
+
+@app.get("/game/")
+def game():
+    if session.get("authenticated") is not True:
+        return redirect("/")
+    return render_template("game.html")
+
+
+@app.get("/api/game/health")
+def game_health():
+    denied = require_authenticated()
+    if denied:
+        return denied
+    return jsonify({
+        "service": "bunsik-rush",
+        "status": "ok",
+        "version": "management-1",
+        "time": datetime.now(timezone.utc).isoformat(),
+        "runtime": "Flask / Gunicorn",
+        "gameExecution": "browser",
+    })
 
 
 @app.post("/api/security/register/options")
