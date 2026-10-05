@@ -53,7 +53,7 @@ permissions:
 jobs:
   build-and-run:
     name: Pull Ubuntu, build server, and verify container
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       LINUX_IMAGE: ubuntu:latest
