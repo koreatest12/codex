@@ -765,7 +765,9 @@ def data_create_dataset():
     denied = require_authenticated()
     if denied:
         return denied
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "JSON body must be an object"}), 400
     try:
         result = DATA_MANAGER.create_dataset(
             str(payload.get("id", "")),
@@ -774,6 +776,30 @@ def data_create_dataset():
     except DataManagerError as exc:
         return _data_error(exc)
     return jsonify(result), 201
+
+
+@app.put("/api/data/datasets/<dataset_id>")
+def data_update_dataset(dataset_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "JSON body must be an object"}), 400
+    expected = payload.get("expected_revision")
+    if expected is None:
+        return jsonify({"error": "expected_revision is required for updates"}), 428
+    try:
+        result = DATA_MANAGER.update_dataset(
+            dataset_id,
+            str(payload.get("description", "")),
+            int(expected),
+        )
+    except (TypeError, ValueError):
+        return jsonify({"error": "expected_revision must be an integer"}), 400
+    except DataManagerError as exc:
+        return _data_error(exc)
+    return jsonify(result)
 
 
 @app.get("/api/data/datasets/<dataset_id>")
@@ -803,7 +829,9 @@ def data_create_record(dataset_id: str):
     denied = require_authenticated()
     if denied:
         return denied
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "JSON body must be an object"}), 400
     try:
         result = DATA_MANAGER.put_record(
             dataset_id,
@@ -832,7 +860,9 @@ def data_update_record(dataset_id: str, record_id: str):
     denied = require_authenticated()
     if denied:
         return denied
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "JSON body must be an object"}), 400
     expected = payload.get("expected_revision")
     if expected is None:
         return jsonify({"error": "expected_revision is required for updates"}), 428
@@ -855,7 +885,9 @@ def data_delete_record(dataset_id: str, record_id: str):
     denied = require_authenticated()
     if denied:
         return denied
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "JSON body must be an object"}), 400
     expected = payload.get("expected_revision")
     if expected is None:
         return jsonify({"error": "expected_revision is required for deletes"}), 428
