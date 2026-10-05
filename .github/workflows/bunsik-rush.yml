@@ -1,0 +1,44 @@
+name: Bunsik Rush Game Validation
+
+on:
+  push:
+    branches: [main, feature/bunsik-rush-game]
+    paths:
+      - 'app/**'
+      - 'games/bunsik-rush/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/bunsik-rush.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'games/bunsik-rush/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/bunsik-rush.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Use Node.js 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Check game scripts and automatic operations
+        run: |
+          npm --prefix games/bunsik-rush run check
+          npm --prefix games/bunsik-rush test
+      - name: Install existing server dependencies
+        run: |
+          python3 -m venv .ci-game
+          .ci-game/bin/pip install --disable-pip-version-check -r requirements.txt
+      - name: Verify server routes, authentication, BGM and existing privacy logic
+        run: PYTHONPATH=app .ci-game/bin/python -m unittest discover -s tests -v

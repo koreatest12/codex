@@ -238,3 +238,11 @@ Inside the container the command is installed as `codex-data-manager`, using `/d
 The manager provides revisions, SHA-256 integrity checks, history, optimistic update checks, import/export, and a sensitive-data guard. Reservation/contact values continue to belong only in the encrypted private-data vault.
 
 See [docs/DATA_MANAGEMENT.md](docs/DATA_MANAGEMENT.md).
+
+
+## 분식 러시 음식 판매 게임
+
+보안키 인증 후 홈의 **분식 러시 게임 실행** 링크 또는 `/game/`에서 플레이합니다.
+자동 요리·판매, 재료·시설·직원 자동 구매, 6가지 메뉴, 묶음 조리, 다음 날 자동 영업과 실제 서버 연결 모니터링을 제공합니다.
+기존 Docker 이미지에 게임 파일과 오리지널 BGM이 함께 포함됩니다.
+[게임 실행·기능·테스트 안내](games/bunsik-rush/README.md)를 참고하세요.
