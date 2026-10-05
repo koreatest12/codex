@@ -13,7 +13,7 @@ _SENSITIVE_KEY_RE = re.compile(
     r"ticket[_-]?number|account[_-]?number)",
     re.IGNORECASE,
 )
-_EMAIL_RE = re.compile(r"[^\\s@]+@[^\\s@]+\\.[^\\s@]+")
+_EMAIL_RE = re.compile(r"[^\s@]+@[^\s@]+\.[^\s@]+")
 _KR_PHONE_RE = re.compile(r"(?<!\d)01[016789][-\s]?\d{3,4}[-\s]?\d{4}(?!\d)")
 _MAX_PAYLOAD_BYTES = 64 * 1024
 
