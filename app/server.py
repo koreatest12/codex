@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 from flask import Flask, Response, jsonify, render_template, request, session
 
 from privacy import PrivacyCipher, mask_value, validate_kind
+from data_manager import DataManager, DataManagerError, NotFound, RevisionConflict
 from webauthn import (
     base64url_to_bytes,
     generate_authentication_options,
@@ -72,6 +73,8 @@ PRIVACY_CIPHER = PrivacyCipher(DATA_ENCRYPTION_KEY)
 RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Codex Container Server").strip()
 USER_NAME = os.environ.get("WEBAUTHN_USER_NAME", "admin").strip()
 DATABASE_PATH = Path(os.environ.get("WEBAUTHN_DB_PATH", "/data/webauthn.db"))
+MANAGED_DATA_DB_PATH = Path(os.environ.get("MANAGED_DATA_DB_PATH", "/data/managed-data.db"))
+DATA_MANAGER = DataManager(MANAGED_DATA_DB_PATH)
 
 origin = urlparse(ORIGIN)
 if not origin.hostname:
@@ -564,6 +567,57 @@ def create_private_value():
     ), 201
 
 
+@app.patch("/api/private-values/<record_id>")
+def update_private_value(record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not ({"label", "value"} & payload.keys()):
+        return jsonify({"error": "label or value is required"}), 400
+
+    row = private_value_row(record_id)
+    if row is None:
+        return jsonify({"error": "private value not found"}), 404
+
+    try:
+        current = PRIVACY_CIPHER.decrypt(
+            record_id, row["kind"], bytes(row["nonce"]), bytes(row["ciphertext"])
+        )
+    except Exception:
+        app.logger.error("Unable to decrypt private value record id=%s", record_id)
+        return jsonify({"error": "stored private value cannot be decrypted"}), 409
+
+    label = str(payload["label"]).strip() if "label" in payload else current["label"]
+    value = str(payload["value"]).strip() if "value" in payload else current["value"]
+    if not label or len(label) > 80:
+        return jsonify({"error": "label must be 1-80 characters"}), 400
+    if not value or len(value) > 512:
+        return jsonify({"error": "value must be 1-512 characters"}), 400
+
+    nonce, ciphertext = PRIVACY_CIPHER.encrypt(record_id, row["kind"], label, value)
+    with db() as connection:
+        connection.execute(
+            """
+            UPDATE private_values
+            SET nonce = ?, ciphertext = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE record_id = ?
+            """,
+            (sqlite3.Binary(nonce), sqlite3.Binary(ciphertext), record_id),
+        )
+
+    return jsonify(
+        {
+            "id": record_id,
+            "kind": row["kind"],
+            "label": label,
+            "masked_value": mask_value(row["kind"], value),
+            "encrypted_at_rest": True,
+        }
+    )
+
+
 @app.delete("/api/private-values/<record_id>")
 def delete_private_value(record_id: str):
     denied = require_authenticated()
@@ -689,6 +743,170 @@ def private_reveal_verify(record_id: str):
     )
 
 
+
+def _data_error(exc: DataManagerError):
+    if isinstance(exc, NotFound):
+        return jsonify({"error": str(exc)}), 404
+    if isinstance(exc, RevisionConflict):
+        return jsonify({"error": str(exc)}), 409
+    return jsonify({"error": str(exc)}), 400
+
+
+@app.get("/api/data/datasets")
+def data_datasets():
+    denied = require_authenticated()
+    if denied:
+        return denied
+    return jsonify({"datasets": DATA_MANAGER.list_datasets()})
+
+
+@app.post("/api/data/datasets")
+def data_create_dataset():
+    denied = require_authenticated()
+    if denied:
+        return denied
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = DATA_MANAGER.create_dataset(
+            str(payload.get("id", "")),
+            str(payload.get("description", "")),
+        )
+    except DataManagerError as exc:
+        return _data_error(exc)
+    return jsonify(result), 201
+
+
+@app.get("/api/data/datasets/<dataset_id>")
+def data_dataset(dataset_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    try:
+        return jsonify(DATA_MANAGER.get_dataset(dataset_id))
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
+@app.get("/api/data/datasets/<dataset_id>/records")
+def data_records(dataset_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    try:
+        return jsonify({"records": DATA_MANAGER.list_records(dataset_id)})
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
+@app.post("/api/data/datasets/<dataset_id>/records")
+def data_create_record(dataset_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = DATA_MANAGER.put_record(
+            dataset_id,
+            str(payload.get("id", "")),
+            payload.get("data"),
+            0,
+        )
+    except DataManagerError as exc:
+        return _data_error(exc)
+    return jsonify(result), 201
+
+
+@app.get("/api/data/datasets/<dataset_id>/records/<record_id>")
+def data_record(dataset_id: str, record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    try:
+        return jsonify(DATA_MANAGER.get_record(dataset_id, record_id))
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
+@app.put("/api/data/datasets/<dataset_id>/records/<record_id>")
+def data_update_record(dataset_id: str, record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    payload = request.get_json(silent=True) or {}
+    expected = payload.get("expected_revision")
+    if expected is None:
+        return jsonify({"error": "expected_revision is required for updates"}), 428
+    try:
+        result = DATA_MANAGER.put_record(
+            dataset_id,
+            record_id,
+            payload.get("data"),
+            int(expected) if expected is not None else None,
+        )
+    except (TypeError, ValueError):
+        return jsonify({"error": "expected_revision must be an integer"}), 400
+    except DataManagerError as exc:
+        return _data_error(exc)
+    return jsonify(result)
+
+
+@app.delete("/api/data/datasets/<dataset_id>/records/<record_id>")
+def data_delete_record(dataset_id: str, record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    payload = request.get_json(silent=True) or {}
+    expected = payload.get("expected_revision")
+    if expected is None:
+        return jsonify({"error": "expected_revision is required for deletes"}), 428
+    try:
+        result = DATA_MANAGER.delete_record(
+            dataset_id,
+            record_id,
+            int(expected) if expected is not None else None,
+        )
+    except (TypeError, ValueError):
+        return jsonify({"error": "expected_revision must be an integer"}), 400
+    except DataManagerError as exc:
+        return _data_error(exc)
+    return jsonify(result)
+
+
+@app.get("/api/data/datasets/<dataset_id>/records/<record_id>/history")
+def data_record_history(dataset_id: str, record_id: str):
+    denied = require_authenticated()
+    if denied:
+        return denied
+    try:
+        return jsonify({"history": DATA_MANAGER.history(dataset_id, record_id)})
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
+@app.get("/api/data/export")
+def data_export():
+    denied = require_authenticated()
+    if denied:
+        return denied
+    dataset_id = request.args.get("dataset")
+    try:
+        return jsonify(DATA_MANAGER.export_bundle(dataset_id))
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
+@app.get("/api/data/verify")
+def data_verify():
+    denied = require_authenticated()
+    if denied:
+        return denied
+    dataset_id = request.args.get("dataset")
+    try:
+        return jsonify(DATA_MANAGER.verify(dataset_id))
+    except DataManagerError as exc:
+        return _data_error(exc)
+
+
 @app.post("/api/security/logout")
 def logout():
     session.clear()
@@ -696,3 +914,4 @@ def logout():
 
 
 init_db()
+DATA_MANAGER.init_schema()

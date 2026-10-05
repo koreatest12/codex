@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "datasets": [
+    {
+      "id": "biff-2026-itinerary",
+      "description": "Public BIFF 2026 itinerary; sensitive booking/contact data excluded",
+      "records": [
+        {
+          "id": "srt-outbound",
+          "data": {
+            "date": "2026-10-06",
+            "route": "수서→부산",
+            "depart": "09:20",
+            "arrive": "12:01"
+          }
+        },
+        {
+          "id": "opening-ceremony",
+          "data": {
+            "date": "2026-10-06",
+            "venue": "영화의전당 루프씨어터",
+            "seat": "6구역 11열 11번",
+            "entry": "17:00",
+            "red_carpet": "18:00",
+            "ceremony": "19:00",
+            "opening_film": "20:20"
+          }
+        },
+        {
+          "id": "dead-end-job",
+          "data": {
+            "date": "2026-10-07",
+            "title": "꿀알바",
+            "venue": "롯데시네마 센텀시티 4관",
+            "start": "09:40",
+            "runtime_minutes": 142,
+            "gv": true
+          }
+        },
+        {
+          "id": "sinner",
+          "data": {
+            "date": "2026-10-07",
+            "title": "자필",
+            "venue": "롯데시네마 센텀시티 4관",
+            "start": "13:40",
+            "runtime_minutes": 110,
+            "gv_session": true,
+            "plan": "본편 관람 / GV 기본 미관람"
+          }
+        },
+        {
+          "id": "srt-return",
+          "data": {
+            "date": "2026-10-07",
+            "route": "부산→수서",
+            "depart": "18:51",
+            "arrive": "21:29"
+          }
+        }
+      ]
+    },
+    {
+      "id": "biff-2026-lodging",
+      "description": "Public lodging information",
+      "records": [
+        {
+          "id": "shilla-stay-haeundae",
+          "data": {
+            "name": "신라스테이 해운대",
+            "address": "부산 해운대구 해운대로570번길 46",
+            "check_in": "15:00",
+            "official_general_check_out": "12:00",
+            "breakfast_included": false
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -219,3 +219,22 @@ See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURI
 ## Study notes
 
 정보보안기사·개발 준비용 디지털시스템 정리: [docs/study/DIGITAL_SYSTEMS.md](docs/study/DIGITAL_SYSTEMS.md)
+
+
+## Dependabot and versioned data management
+
+Dependency update automation is configured in [.github/dependabot.yml](.github/dependabot.yml) for pip, Maven, Docker, and GitHub Actions. Minor/patch updates are grouped; major updates remain individually reviewable.
+
+Public BIFF/application data can be created and maintained through the versioned data manager:
+
+```bash
+python3 scripts/data-manager.py --db /tmp/managed.db import data/biff-2026/seed.json
+python3 scripts/data-manager.py --db /tmp/managed.db verify
+python3 scripts/data-manager.py --db /tmp/managed.db export --output backup.json
+```
+
+Inside the container the command is installed as `codex-data-manager`, using `/data/managed-data.db` by default.
+
+The manager provides revisions, SHA-256 integrity checks, history, optimistic update checks, import/export, and a sensitive-data guard. Reservation/contact values continue to belong only in the encrypted private-data vault.
+
+See [docs/DATA_MANAGEMENT.md](docs/DATA_MANAGEMENT.md).
