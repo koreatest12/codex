@@ -24,6 +24,9 @@ class AdminServerTests(unittest.TestCase):
             json.dumps(make_account("admin", cls.password)), encoding="utf-8"
         )
         options = {
+            "SESSION_SECRET_FILE": "",
+            "WEBAUTHN_BOOTSTRAP_TOKEN_FILE": "",
+            "DATA_ENCRYPTION_KEY_FILE": "",
             "SESSION_SECRET": "integration-test-" + secrets.token_urlsafe(40),
             "WEBAUTHN_RP_ID": "localhost",
             "WEBAUTHN_ORIGIN": "http://localhost:8080",
