@@ -284,3 +284,16 @@ capacity. For a host-side summary without printing secrets:
     sudo bash scripts/final-status.sh
 
 See [administrator access and runtime status](docs/DOCKER_OPERATIONS.md).
+
+
+## CI secret-source conflict regression hardening
+
+The Flask server intentionally rejects configurations containing both
+`SESSION_SECRET` and `SESSION_SECRET_FILE` (likewise for WebAuthn
+bootstrap and encryption keys). No insecure password/secret fallback is
+added. The tests isolate their environment from inherited Actions runner
+variables, while subprocess integration tests cover file-only, direct-only,
+missing and conflicting secret configuration. The Linux container workflow
+also runs a redacted file-mode preflight.
+
+See [duplicate-secret troubleshooting](docs/DOCKER_OPERATIONS.md).
