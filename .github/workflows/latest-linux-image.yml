@@ -149,6 +149,10 @@ jobs:
           echo "$output" | grep -q '^registered_security_keys=0$'
           echo "$output" | grep -q '^private_key_stored=false$'
 
+      - name: Verify optional administrator password plus WebAuthn container
+        run: |
+          bash scripts/verify-admin-container.sh
+
       - name: Show built server image
         run: docker image inspect "${SERVER_IMAGE}" --format 'Image={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
 
