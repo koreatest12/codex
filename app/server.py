@@ -344,6 +344,8 @@ def record_failed_password_login():
 def account_login():
     if ADMIN_ACCOUNT is None:
         return jsonify({"error": "account/password login is not configured"}), 404
+    if not request.is_json:
+        return jsonify({"error": "JSON request required"}), 415
     if login_lock_until() > int(time.time()):
         return jsonify({"error": "too many attempts; retry in a few minutes"}), 429
 
