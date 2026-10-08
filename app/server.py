@@ -80,6 +80,8 @@ MANAGED_DATA_DB_PATH = Path(os.environ.get("MANAGED_DATA_DB_PATH", "/data/manage
 DATA_MANAGER = DataManager(MANAGED_DATA_DB_PATH)
 ADMIN_ACCOUNT_PATH = os.environ.get("ADMIN_ACCOUNT_FILE", "").strip()
 ADMIN_ACCOUNT = AdminAccount.from_file(ADMIN_ACCOUNT_PATH) if ADMIN_ACCOUNT_PATH else None
+if ADMIN_ACCOUNT is not None:
+    USER_NAME = ADMIN_ACCOUNT.username
 STARTED_AT = time.monotonic()
 
 origin = urlparse(ORIGIN)
