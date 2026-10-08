@@ -115,3 +115,69 @@ expose the daemon socket to untrusted users. Docker image artifacts retain
 a sanitized copy of tracked project content, not arbitrary host files.
 New cloud server instances, real physical disks, public DNS, TLS, firewalls
 and deployment credentials require separate host/cloud infrastructure.
+
+## Administrator account and password + FIDO2 (opt-in)
+
+For a **new installation**, first run the existing security environment
+bootstrap to create encrypted-data keys and the local-only secrets directory:
+
+    bash scripts/generate-security-env.sh localhost http://localhost:8080
+
+For an **existing installation**, preserve the current .env, encryption key,
+FIDO2 credential database and Docker volume: do NOT rerun the bootstrap.
+
+In your own interactive Ubuntu/WSL terminal create the first admin account:
+
+    python3 scripts/setup-admin-account.py --username admin
+
+The script prints a unique randomly generated password to the **terminal once**.
+Save that password in a password manager. Only a salted scrypt hash (not the
+plaintext password) is stored under secrets/admin_account with permissions
+0600. The secrets directory is excluded from Git/image builds.
+
+Activate the password requirement explicitly with the Compose overlay:
+
+    sudo docker compose -f compose.yaml -f compose.account.yaml up -d --build
+    sudo docker compose -f compose.yaml -f compose.account.yaml ps
+
+Access the configured origin, sign in as admin with the locally generated
+password, **then** register/authenticate a physical FIDO2 hardware key.
+An account password alone never grants access to the vault or data management.
+For first-key registration, the original bootstrap token is still required.
+
+To rotate an account credential (take a secure backup and plan downtime):
+
+    python3 scripts/setup-admin-account.py --username admin --rotate
+    sudo docker compose -f compose.yaml -f compose.account.yaml up -d --force-recreate
+
+Rotating the credential file alone does not invalidate existing Flask session
+cookies. Rotate session_secret as part of a planned maintenance window to
+invalidate sessions (and securely preserve a copy of secrets first).
+
+Previous FIDO2-only deployments are NOT automatically switched into account
+mode: without the overlay, the original WebAuthn workflow stays supported.
+
+This is a single local administrative account, not Linux useradd, SSH login,
+Docker Hub/GitHub account creation, or a multi-tenant identity provider.
+Administrator account provisioning happens on the chosen host, not in CI.
+
+### Runtime status
+
+After completing account + hardware-key login, the main web UI displays
+"서버 최종 운영 상태" and reads GET /api/system/status. The route returns:
+- current process uptime, configured authentication mode and admin username;
+- registered FIDO2 keys, encrypted vault record count and AES-GCM state;
+- local persistent database presence and filesystem total/free/used bytes.
+
+This is runtime telemetry obtained **inside the app container**. It does not
+prove external access, physical disk provisioning, registry publishing, or
+cloud VM installation. The public /healthz endpoint deliberately reveals only
+a minimum health signal. Unauthenticated /api/system/status returns HTTP 403.
+
+For a credential-safe CLI check of the local Docker host:
+
+    sudo bash scripts/final-status.sh
+
+It shows actual Compose containers, images, persistent volume name and HTTP
+health without printing password hashes or mounted secrets. This script
+uses the account overlay automatically only when a local account file exists.
