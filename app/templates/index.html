@@ -11,13 +11,30 @@
     <div class="badge">FIDO2 / WebAuthn</div>
     <h1>Codex Linux Container Server</h1>
 
-    {% if authenticated %}
+    {% if account_required and not password_verified %}
+      <h2>관리자 계정 로그인</h2>
+      <p>관리자 ID와 비밀번호를 인증한 후 FIDO2 보안키 인증을 진행합니다.</p>
+      <form id="admin-account-login">
+        <label for="admin-username">관리자 ID</label>
+        <input id="admin-username" name="username" autocomplete="username" maxlength="32" required>
+        <label for="admin-password">비밀번호</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">계정 인증하고 보안키 단계로 이동</button>
+      </form>
+    {% elif authenticated %}
       <h2>보안키 인증 완료</h2>
       <p>보호된 컨테이너 서버에 접근했습니다.</p>
       <div class="actions">
         <button id="add-key" type="button">백업 보안키 추가</button>
         <button id="logout" class="secondary" type="button">로그아웃</button>
       </div>
+
+      <section id="server-status-panel" class="vault" aria-labelledby="server-status-heading">
+        <h2 id="server-status-heading">서버 최종 운영 상태</h2>
+        <p class="vault-note">실제 실행 중인 컨테이너에서 조회한 상태입니다. Docker 호스트 전체의 상태나 GitHub Actions 성공 여부를 의미하지 않습니다.</p>
+        <button id="refresh-server-status" type="button" class="secondary compact">상태 새로고침</button>
+        <pre id="server-status-output" aria-live="polite">상태 확인 중...</pre>
+      </section>
 
       <section id="private-vault" class="vault" aria-labelledby="private-vault-title">
         <h2 id="private-vault-title">암호화 개인정보 보관함</h2>
@@ -49,14 +66,14 @@
       <button id="login-key" type="button">보안키로 로그인</button>
     {% else %}
       <h2>Security Key Required</h2>
-      <p>첫 관리자 보안키를 등록해야 합니다. 초기 등록 토큰은 서버 환경변수에서만 관리합니다.</p>
+      <p>첫 관리자 보안키를 등록해야 합니다. 초기 등록 토큰은 서버의 비공개 파일에서만 관리합니다.</p>
       <label for="bootstrap-token">초기 등록 토큰</label>
       <input id="bootstrap-token" type="password" autocomplete="off" spellcheck="false">
       <button id="register-key" type="button">첫 보안키 등록</button>
     {% endif %}
 
     <p id="status" role="status" aria-live="polite"></p>
-    <p class="notice">운영 환경에서는 HTTPS가 필수이며 비밀번호 로그인 우회 경로는 제공하지 않습니다.</p>
+    <p class="notice">운영 환경에서는 HTTPS가 필요하며, 비밀번호를 설정한 서버는 계정 인증과 FIDO2 보안키 인증이 모두 필요합니다.</p>
   </main>
   <script src="{{ url_for('static', filename='security.js') }}"></script>
 </body>
