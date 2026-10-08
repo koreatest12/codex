@@ -31,6 +31,7 @@
           "data": {
             "date": "2026-10-07",
             "title": "꿀알바",
+            "watched": true,
             "venue": "롯데시네마 센텀시티 4관",
             "start": "09:40",
             "runtime_minutes": 142,
@@ -42,6 +43,7 @@
           "data": {
             "date": "2026-10-07",
             "title": "자필",
+            "watched": true,
             "venue": "롯데시네마 센텀시티 4관",
             "start": "13:40",
             "runtime_minutes": 110,
