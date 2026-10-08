@@ -64,6 +64,19 @@ class AdminServerTests(unittest.TestCase):
         self.assertFalse(info["authenticated"])
         self.assertFalse(info["password_verified"])
 
+    def test_non_json_form_cannot_trigger_password_lockout(self):
+        for _ in range(6):
+            response = self.client.post(
+                "/api/security/account/login",
+                data={"username": "admin", "password": "bad"},
+            )
+            self.assertEqual(415, response.status_code)
+        self.assertEqual(0, self.server.login_lock_until())
+        response = self.client.post("/api/security/account/login", json={
+            "username": "admin", "password": self.password
+        })
+        self.assertEqual(200, response.status_code)
+
     def test_password_first_then_hardware_key_still_required(self):
         self.assertEqual(
             401,
