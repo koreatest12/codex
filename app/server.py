@@ -5,6 +5,8 @@ import json
 import os
 import secrets
 import sqlite3
+import shutil
+import time
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
@@ -12,6 +14,7 @@ from urllib.parse import urlparse
 from flask import Flask, Response, jsonify, render_template, request, session
 
 from privacy import PrivacyCipher, mask_value, validate_kind
+from admin_auth import AdminAccount
 from data_manager import DataManager, DataManagerError, NotFound, RevisionConflict
 from webauthn import (
     base64url_to_bytes,
@@ -75,6 +78,9 @@ USER_NAME = os.environ.get("WEBAUTHN_USER_NAME", "admin").strip()
 DATABASE_PATH = Path(os.environ.get("WEBAUTHN_DB_PATH", "/data/webauthn.db"))
 MANAGED_DATA_DB_PATH = Path(os.environ.get("MANAGED_DATA_DB_PATH", "/data/managed-data.db"))
 DATA_MANAGER = DataManager(MANAGED_DATA_DB_PATH)
+ADMIN_ACCOUNT_PATH = os.environ.get("ADMIN_ACCOUNT_FILE", "").strip()
+ADMIN_ACCOUNT = AdminAccount.from_file(ADMIN_ACCOUNT_PATH) if ADMIN_ACCOUNT_PATH else None
+STARTED_AT = time.monotonic()
 
 origin = urlparse(ORIGIN)
 if not origin.hostname:
@@ -133,6 +139,17 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS metadata (
                 key TEXT PRIMARY KEY,
                 value BLOB NOT NULL
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS admin_login_failures (
+                id INTEGER PRIMARY KEY CHECK(id = 1),
+                count INTEGER NOT NULL,
+                first_failed_at INTEGER NOT NULL,
+                blocked_until INTEGER NOT NULL DEFAULT 0
             )
             """
         )
@@ -201,7 +218,7 @@ def private_value_row(record_id: str):
 
 
 def require_authenticated():
-    if session.get("authenticated") is not True:
+    if not fully_authenticated():
         return jsonify({"error": "authentication required"}), 403
     return None
 
@@ -228,9 +245,11 @@ def bootstrap_authorized() -> bool:
 
 
 def registration_authorized() -> bool:
+    if not password_verified():
+        return False
     if credential_count() == 0:
         return bootstrap_authorized()
-    return session.get("authenticated") is True
+    return fully_authenticated()
 
 
 def require_registration_authorization():
@@ -264,6 +283,112 @@ def security_headers(response):
     return response
 
 
+def password_verified() -> bool:
+    if ADMIN_ACCOUNT is None:
+        return True
+    return (
+        session.get("password_verified") is True
+        and session.get("admin_account_fingerprint") == ADMIN_ACCOUNT.fingerprint
+    )
+
+
+def fully_authenticated() -> bool:
+    return session.get("authenticated") is True and password_verified()
+
+
+def require_password_step():
+    if not password_verified():
+        return jsonify({"error": "administrator username/password required first"}), 403
+    return None
+
+
+def establish_webauthn_session():
+    # Never let WebAuthn verification clear a successfully verified password step.
+    verified = password_verified()
+    session.clear()
+    session.permanent = True
+    if ADMIN_ACCOUNT is not None and verified:
+        session["password_verified"] = True
+        session["admin_account_fingerprint"] = ADMIN_ACCOUNT.fingerprint
+    session["authenticated"] = True
+
+
+def login_lock_until() -> int:
+    with db() as connection:
+        row = connection.execute(
+            "SELECT blocked_until FROM admin_login_failures WHERE id = 1"
+        ).fetchone()
+        return int(row["blocked_until"]) if row else 0
+
+
+def record_failed_password_login():
+    now = int(time.time())
+    with db() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT count, first_failed_at FROM admin_login_failures WHERE id = 1"
+        ).fetchone()
+        count = int(row["count"]) + 1 if row and now - row["first_failed_at"] < 900 else 1
+        start = int(row["first_failed_at"]) if row and now - row["first_failed_at"] < 900 else now
+        until = now + 300 if count >= 5 else 0
+        connection.execute(
+            """INSERT INTO admin_login_failures(id, count, first_failed_at, blocked_until)
+               VALUES (1, ?, ?, ?)
+               ON CONFLICT(id) DO UPDATE SET count=excluded.count,
+                   first_failed_at=excluded.first_failed_at, blocked_until=excluded.blocked_until""",
+            (count, start, until),
+        )
+
+
+@app.post("/api/security/account/login")
+def account_login():
+    if ADMIN_ACCOUNT is None:
+        return jsonify({"error": "account/password login is not configured"}), 404
+    if login_lock_until() > int(time.time()):
+        return jsonify({"error": "too many attempts; retry in a few minutes"}), 429
+
+    payload = request.get_json(silent=True)
+    username = payload.get("username") if isinstance(payload, dict) else None
+    password = payload.get("password") if isinstance(payload, dict) else None
+
+    if not ADMIN_ACCOUNT.verify(username, password):
+        record_failed_password_login()
+        return jsonify({"error": "invalid administrator credentials"}), 401
+
+    with db() as connection:
+        connection.execute("DELETE FROM admin_login_failures WHERE id = 1")
+    session.clear()
+    session.permanent = True
+    session["password_verified"] = True
+    session["admin_account_fingerprint"] = ADMIN_ACCOUNT.fingerprint
+    return jsonify({"ok": True, "next_step": "webauthn"})
+
+
+@app.get("/api/system/status")
+def system_status():
+    denied = require_authenticated()
+    if denied:
+        return denied
+
+    disk = shutil.disk_usage(DATABASE_PATH.parent)
+    return jsonify({
+        "service": "codex-linux-server",
+        "health": "ok",
+        "uptime_seconds": int(time.monotonic() - STARTED_AT),
+        "authentication": "password+webauthn" if ADMIN_ACCOUNT else "webauthn",
+        "admin_username": ADMIN_ACCOUNT.username if ADMIN_ACCOUNT else USER_NAME,
+        "security_key_registered": credential_count() > 0,
+        "registered_security_keys": credential_count(),
+        "encrypted_private_value_count": private_value_count(),
+        "encryption_at_rest": "AES-256-GCM",
+        "data_storage_path": str(DATABASE_PATH.parent),
+        "storage_bytes_total": disk.total,
+        "storage_bytes_free": disk.free,
+        "storage_bytes_used": disk.used,
+        "database_present": DATABASE_PATH.is_file(),
+    })
+
+
 @app.get("/healthz")
 def healthz():
     return jsonify({"status": "ok", "authentication": "webauthn"})
@@ -274,14 +399,16 @@ def security_status():
     return jsonify(
         {
             "security_key_required": True,
+            "password_required": ADMIN_ACCOUNT is not None,
+            "password_verified": password_verified() if ADMIN_ACCOUNT else False,
             "registered": credential_count() > 0,
-            "authenticated": session.get("authenticated") is True,
+            "authenticated": fully_authenticated(),
             "rp_id": RP_ID,
             "https_required": not is_local_origin,
             "private_data_encryption": "AES-256-GCM",
             "private_data_masked_by_default": True,
             "private_value_count": (
-                private_value_count() if session.get("authenticated") is True else None
+                private_value_count() if fully_authenticated() else None
             ),
         }
     )
@@ -316,8 +443,10 @@ def security_credentials():
 def index():
     return render_template(
         "index.html",
-        authenticated=session.get("authenticated") is True,
+        authenticated=fully_authenticated(),
         registered=credential_count() > 0,
+        account_required=ADMIN_ACCOUNT is not None,
+        password_verified=password_verified(),
     )
 
 
@@ -395,14 +524,15 @@ def registration_verify():
     except sqlite3.IntegrityError:
         return jsonify({"error": "security key is already registered"}), 409
 
-    session.clear()
-    session.permanent = True
-    session["authenticated"] = True
+    establish_webauthn_session()
     return jsonify({"ok": True})
 
 
 @app.post("/api/security/authenticate/options")
 def authentication_options():
+    denied = require_password_step()
+    if denied:
+        return denied
     rows = credential_rows()
     if not rows:
         return jsonify({"error": "no security key has been registered"}), 409
@@ -421,6 +551,9 @@ def authentication_options():
 
 @app.post("/api/security/authenticate/verify")
 def authentication_verify():
+    denied = require_password_step()
+    if denied:
+        return denied
     credential = request.get_json(silent=True)
     if not isinstance(credential, dict) or not credential.get("id"):
         return jsonify({"error": "invalid credential payload"}), 400
@@ -464,9 +597,7 @@ def authentication_verify():
             (int(verification.new_sign_count), normalized_key),
         )
 
-    session.clear()
-    session.permanent = True
-    session["authenticated"] = True
+    establish_webauthn_session()
     return jsonify({"ok": True})
 
 
