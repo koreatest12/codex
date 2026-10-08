@@ -39,3 +39,5 @@ secrets:
 
 volumes:
   security-data:
+    # Match the volume created by scripts/prepare-docker-storage.sh
+    name: ${DATA_VOLUME:-codex-security-data}

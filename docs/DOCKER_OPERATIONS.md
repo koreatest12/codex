@@ -1,0 +1,112 @@
+# Docker deployment, CI images and persistent storage
+
+The repository runs a Flask/WebAuthn application behind Gunicorn and Nginx,
+with Java 21, javac, Maven and the compiled BIFF planner. A sanitized source
+snapshot is included in each built image at /opt/codex-source. This includes
+source files, docs, tests, CI workflow definitions and the public BIFF seed.
+Runtime services remain under /opt/app and /opt/java-biff-planner. The image
+MUST NOT contain credentials, private databases, host backups or .env.
+
+## 1. Install Docker Engine on an Ubuntu host you administer
+
+Run these commands on the actual Ubuntu host, not in GitHub Actions:
+
+    git clone https://github.com/koreatest12/codex.git
+    cd codex
+    sudo bash scripts/install-docker-ubuntu.sh
+    sudo docker version
+    sudo docker compose version
+
+The installer uses Docker's official apt repository and installs Docker
+Engine, Buildx and Compose. It requires administrative privileges and
+does not create a cloud VM, physical disk or public Docker TCP endpoint.
+Review host installation scripts before running. Windows users should
+use Docker Desktop with WSL2 rather than this Ubuntu-only installer.
+
+## 2. Create/reuse a persistent logical disk (Docker volume)
+
+    sudo bash scripts/prepare-docker-storage.sh
+    sudo docker volume inspect codex-security-data
+
+The Docker volume name defaults to codex-security-data. The Compose volume
+uses this exact name and mounts it at /data. Existing volumes are reused
+and never intentionally wiped on container recreation.
+
+A Docker named volume is NOT an allocated physical disk, a newly formatted
+partition, or a reserved storage capacity. Provision/encrypt your own block
+storage at the host/cloud level when needed.
+
+IMPORTANT: Never run docker compose down -v or docker volume rm if you need
+the saved WebAuthn credential records and encrypted private-value vault.
+
+## 3. Generate secrets once, then build and start the server
+
+    bash scripts/generate-security-env.sh localhost http://localhost:8080
+    bash scripts/build-image.sh
+    docker compose up -d --no-build
+    docker compose ps
+    curl -fsS http://127.0.0.1:8080/healthz
+
+Generation refuses to overwrite existing secrets or .env. To set up a real
+domain, provide a matching HTTPS origin and terminate TLS with a secure
+reverse proxy. The published app port is loopback-only by default. A FIDO2
+hardware key must be registered interactively in the browser before
+protected data access can work.
+
+Check logs: docker compose logs -f web
+
+## 4. CI image builds and the registry
+
+The file .github/workflows/docker-image-ci.yml runs for pull requests and
+main-branch pushes. Docker Buildx checks that the sanitized repository
+sources were packaged, that secret/local data paths are absent, that
+Python unit tests pass, and that the Java CLI works.
+
+On the main branch only, successful images are pushed to GitHub Container
+Registry as:
+
+- ghcr.io/koreatest12/codex:sha-<12-character-commit-sha>
+- ghcr.io/koreatest12/codex:latest
+
+The job uses GITHUB_TOKEN with packages:write. GitHub repository/package
+permissions and package visibility can require adjustment. A successful
+image CI build is NOT a successful deployment to a physical server.
+
+To use a published image after it exists, set SERVER_IMAGE in your
+local .env to an existing pinned SHA image tag and run:
+
+    docker compose pull web
+    docker compose up -d --no-build
+
+This preserves the named /data volume. If the GHCR package is private,
+authenticate with docker login ghcr.io using an appropriate access token.
+
+The existing latest-linux-image.yml workflow additionally checks a
+temporary running server, /healthz, WebAuthn gates, and defense tests.
+
+## 5. Backups and disaster recovery
+
+To avoid SQLite corruption, stop writes before file-based backup. On
+your own host, use a locked-down backup directory:
+
+    mkdir -p backups
+    chmod 700 backups
+    docker compose stop web
+    docker run --rm -v codex-security-data:/data:ro \
+      -v "$PWD/backups:/backup" ubuntu:latest \
+      sh -c 'tar -czf /backup/codex-data-backup.tar.gz -C /data .'
+    docker compose start web
+    chmod 600 backups/codex-data-backup.tar.gz
+
+Keep the backup confidential and encrypt/offload it separately. Store a
+recoverable copy of secrets/data_encryption_key separately from the data
+backup, in a secure location; encrypted fields cannot be decrypted without
+the original key. Do not upload archives or keys to Git or a public registry.
+
+## Security notes
+
+Docker daemon permissions grant effective root-like host access; do not
+expose the daemon socket to untrusted users. Docker image artifacts retain
+a sanitized copy of tracked project content, not arbitrary host files.
+New cloud server instances, real physical disks, public DNS, TLS, firewalls
+and deployment credentials require separate host/cloud infrastructure.
