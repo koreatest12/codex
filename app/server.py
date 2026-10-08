@@ -416,7 +416,7 @@ def security_status():
 
 @app.get("/api/security/credentials")
 def security_credentials():
-    if session.get("authenticated") is not True:
+    if not fully_authenticated():
         return jsonify({"error": "authentication required"}), 403
 
     credentials = []
