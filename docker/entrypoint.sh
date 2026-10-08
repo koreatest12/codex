@@ -23,4 +23,15 @@ export SESSION_SECRET_FILE="${INTERNAL_SECRET_DIR}/session_secret"
 export WEBAUTHN_BOOTSTRAP_TOKEN_FILE="${INTERNAL_SECRET_DIR}/webauthn_bootstrap_token"
 export DATA_ENCRYPTION_KEY_FILE="${INTERNAL_SECRET_DIR}/data_encryption_key"
 
+# Optional password credential file. Fail closed when configured but missing.
+if [[ -n "${ADMIN_ACCOUNT_FILE:-}" ]]; then
+  if [[ ! -f "$ADMIN_ACCOUNT_FILE" || ! -s "$ADMIN_ACCOUNT_FILE" ]]; then
+    echo "ERROR: configured admin account credential file is missing/empty" >&2
+    exit 1
+  fi
+  install -m 0400 -o www-data -g www-data \
+    "$ADMIN_ACCOUNT_FILE" "${INTERNAL_SECRET_DIR}/admin_account"
+  export ADMIN_ACCOUNT_FILE="${INTERNAL_SECRET_DIR}/admin_account"
+fi
+
 exec supervisord -c /etc/supervisor/conf.d/codex.conf
