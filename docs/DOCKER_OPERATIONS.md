@@ -181,3 +181,53 @@ For a credential-safe CLI check of the local Docker host:
 It shows actual Compose containers, images, persistent volume name and HTTP
 health without printing password hashes or mounted secrets. This script
 uses the account overlay automatically only when a local account file exists.
+
+
+## Debugging duplicate GitHub Actions secret-source variables
+
+If a historic CI run reports:
+
+    RuntimeError: configure only one of SESSION_SECRET or SESSION_SECRET_FILE
+
+the Python server received a direct secret and a file path for the same
+configuration. The same rule applies to WEBAUTHN_BOOTSTRAP_TOKEN and
+DATA_ENCRYPTION_KEY. **Do not change the application to silently pick one**
+or log values: ambiguity is rejected intentionally.
+
+The integrated tests now:
+- clear inherited runner variables before importing the application;
+- verify independent file-only and direct-only process startup;
+- verify each direct+file conflict fails closed;
+- verify a missing or unreadable secret does not fall back to defaults;
+- check empty files, missing configuration, and redacted diagnostics;
+- run CI file-source preflight after ephemeral secret files are created.
+
+For GitHub Actions / Docker Compose, use ONLY these file source variables
+inside the container:
+
+    SESSION_SECRET_FILE=/run/secrets/session_secret
+    WEBAUTHN_BOOTSTRAP_TOKEN_FILE=/run/secrets/webauthn_bootstrap_token
+    DATA_ENCRYPTION_KEY_FILE=/run/secrets/data_encryption_key
+
+Do not simultaneously pass SESSION_SECRET, WEBAUTHN_BOOTSTRAP_TOKEN,
+or DATA_ENCRYPTION_KEY as plaintext environment variables.
+
+For local development with direct environment secrets, do the reverse:
+unset all three *_FILE variables. This is appropriate only for disposable
+development credentials, not production Docker deployments.
+
+The safe preflight script prints configuration **names and source modes
+only**, never the secret contents:
+
+    PYTHONPATH=app python3 scripts/check-secret-sources.py --mode file
+
+It expects the listed environment FILE paths to exist and be readable.
+CI runs this automatically. To reproduce all regression tests after installing
+requirements in a Python virtual environment:
+
+    PYTHONPATH=app python3 -m unittest discover -s tests -v
+
+The historical log from a failed commit does not disappear when code is
+fixed; compare the full commit SHA and inspect a fresh workflow run.
+Never paste full secret values, Docker mount contents, or authentication
+tokens into a GitHub issue or CI logs.

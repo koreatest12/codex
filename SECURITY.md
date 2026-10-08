@@ -134,3 +134,18 @@ The /api/system/status route returns running application information only to
 an authenticated administrator (both factors if account mode is enabled).
 It does not expose password hashes, keys, token values or Docker daemon
 access. The public /healthz route remains deliberately minimal.
+
+
+## Secret source precedence and automated regression checks
+
+For each sensitive value, provide exactly one source: the direct environment
+variable OR the corresponding `*_FILE` variable. Both means a hard startup
+failure. This protects against accidental environment overrides and prevents
+running with an unexpected authentication or encryption key. All deployment
+examples use file-backed secrets for containers.
+
+Tests use isolated, synthetic values and exercise successful direct/file
+startup as well as rejected conflicts and missing files; CI preflight
+validates that the ephemeral canary secrets are file-backed. No plaintext
+production secret is written into GitHub repositories, container images,
+or workflow logs.
