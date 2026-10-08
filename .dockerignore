@@ -1,3 +1,54 @@
+# Repository metadata and local secrets
 .git
-.github
-*.md
+.git/**
+.env
+.env.*
+!.env.example
+secrets
+secrets/**
+**/secrets/**
+.ci-secrets
+.ci-secrets/**
+**/.ci-secrets/**
+
+# Never bake local databases or credentials into an image
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.pem
+*.p12
+*.pfx
+*.key
+*.jks
+*.keystore
+
+# Copy the public tracked dataset seed, but not arbitrary local data
+data/*
+!data/biff-2026/
+data/biff-2026/*
+!data/biff-2026/seed.json
+
+# Build outputs, caches and workstation folders
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.tox/
+**/.venv/
+.venv/
+.ci-python/
+**/target/
+**/build/
+**/dist/
+**/node_modules/
+**/.idea/
+**/.vscode/
+.DS_Store
+*.log
+*.tmp
+backups/
+backup/
