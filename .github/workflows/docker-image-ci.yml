@@ -1,0 +1,97 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "compose.yaml"
+      - "requirements.txt"
+      - "app/**"
+      - "docker/**"
+      - "java-biff-planner/**"
+      - "scripts/**"
+      - "tests/**"
+      - "data/biff-2026/seed.json"
+      - "docs/**"
+      - ".github/workflows/docker-image-ci.yml"
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Validate shell scripts
+        run: bash -n scripts/*.sh docker/*.sh
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and cache image locally
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          pull: true
+          load: true
+          tags: codex-ci:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check packaged contents, exclusions and unit tests
+        shell: bash
+        run: |
+          image="codex-ci:${GITHUB_SHA}"
+          docker run --rm --entrypoint /bin/bash "$image" -euc '
+            for path in \
+              /opt/codex-source/README.md \
+              /opt/codex-source/docs/DOCKER_OPERATIONS.md \
+              /opt/codex-source/.github/workflows/docker-image-ci.yml \
+              /opt/codex-source/app/server.py \
+              /opt/codex-source/tests/test_privacy.py \
+              /opt/codex-source/java-biff-planner/pom.xml \
+              /opt/codex-source/data/biff-2026/seed.json; do
+              test -f "$path"
+            done
+            for path in /opt/codex-source/.git /opt/codex-source/.env \
+                        /opt/codex-source/secrets /opt/codex-source/.ci-secrets \
+                        /opt/codex-source/app/__pycache__; do
+              test ! -e "$path"
+            done
+            PYTHONPATH=/opt/app /opt/venv/bin/python -m unittest discover -s /opt/codex-source/tests -v
+            java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar toolchain
+          '
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish immutable SHA tag and latest
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          target="ghcr.io/${owner}/codex"
+          source="codex-ci:${GITHUB_SHA}"
+          docker tag "$source" "${target}:sha-${GITHUB_SHA::12}"
+          docker tag "$source" "${target}:latest"
+          docker push "${target}:sha-${GITHUB_SHA::12}"
+          docker push "${target}:latest"
+          echo "Published ${target}:sha-${GITHUB_SHA::12} and latest"
