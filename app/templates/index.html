@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex Linux Container Server</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='security.css') }}">
+</head>
+<body>
+  <main class="panel">
+    <div class="badge">FIDO2 / WebAuthn</div>
+    <h1>Codex Linux Container Server</h1>
+
+    {% if authenticated %}
+      <h2>보안키 인증 완료</h2>
+      <p>보호된 컨테이너 서버에 접근했습니다.</p>
+      <div class="actions">
+        <button id="add-key" type="button">백업 보안키 추가</button>
+        <button id="logout" class="secondary" type="button">로그아웃</button>
+      </div>
+
+      <section id="private-vault" class="vault" aria-labelledby="private-vault-title">
+        <h2 id="private-vault-title">암호화 개인정보 보관함</h2>
+        <p class="vault-note">예매번호와 개인 연락처는 AES-256-GCM으로 암호화하여 저장합니다. 목록에는 마스킹된 값만 표시하며 원문 열람은 보안키 재인증이 필요합니다.</p>
+        <form id="private-value-form">
+          <label for="private-kind">정보 종류</label>
+          <select id="private-kind" required>
+            <option value="reservation">예매/예약 번호</option>
+            <option value="phone">전화번호</option>
+            <option value="email">이메일</option>
+            <option value="contact">기타 연락처</option>
+            <option value="other">기타 민감정보</option>
+          </select>
+          <label for="private-label">표시 이름</label>
+          <input id="private-label" maxlength="80" placeholder="예: SRT 예매번호" required>
+          <label for="private-value">원문 값</label>
+          <input id="private-value" type="password" maxlength="512" autocomplete="off" required>
+          <button type="submit">암호화하여 저장</button>
+        </form>
+        <div class="vault-toolbar">
+          <strong>저장된 항목</strong>
+          <button id="refresh-private-values" class="secondary compact" type="button">새로고침</button>
+        </div>
+        <div id="private-values" class="private-values" aria-live="polite"></div>
+      </section>
+    {% elif registered %}
+      <h2>Security Key Required</h2>
+      <p>서버 접근을 위해 등록된 FIDO2 보안키로 인증해야 합니다.</p>
+      <button id="login-key" type="button">보안키로 로그인</button>
+    {% else %}
+      <h2>Security Key Required</h2>
+      <p>첫 관리자 보안키를 등록해야 합니다. 초기 등록 토큰은 서버 환경변수에서만 관리합니다.</p>
+      <label for="bootstrap-token">초기 등록 토큰</label>
+      <input id="bootstrap-token" type="password" autocomplete="off" spellcheck="false">
+      <button id="register-key" type="button">첫 보안키 등록</button>
+    {% endif %}
+
+    <p id="status" role="status" aria-live="polite"></p>
+    <p class="notice">운영 환경에서는 HTTPS가 필수이며 비밀번호 로그인 우회 경로는 제공하지 않습니다.</p>
+  </main>
+  <script src="{{ url_for('static', filename='security.js') }}"></script>
+</body>
+</html>

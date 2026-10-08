@@ -4,16 +4,26 @@ on:
   push:
     branches:
       - main
-      - feat/container-server-build
+      - security/harden-webauthn-secrets
+      - feature/biff-2026-java-toolchain
+      - feature/private-data-vault
     paths:
       - ".github/workflows/latest-linux-image.yml"
       - "Dockerfile"
       - "compose.yaml"
       - ".dockerignore"
+      - ".env.example"
+      - "app/**"
       - "docker/**"
+      - "requirements.txt"
       - "scripts/**"
       - "tests/**"
+      - "java-biff-planner/**"
+      - "docs/biff-2026/**"
+      - "SECURITY.md"
       - "README.md"
+      - ".github/dependabot.yml"
+      - "data/**"
   pull_request:
     branches:
       - main
@@ -22,10 +32,19 @@ on:
       - "Dockerfile"
       - "compose.yaml"
       - ".dockerignore"
+      - ".env.example"
+      - "app/**"
       - "docker/**"
+      - "requirements.txt"
       - "scripts/**"
       - "tests/**"
+      - "java-biff-planner/**"
+      - "docs/biff-2026/**"
+      - "docs/DATA_MANAGEMENT.md"
+      - "SECURITY.md"
       - "README.md"
+      - ".github/dependabot.yml"
+      - "data/**"
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 1"
@@ -36,20 +55,64 @@ permissions:
 jobs:
   build-and-run:
     name: Pull Ubuntu, build server, and verify container
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
       LINUX_IMAGE: ubuntu:latest
       SERVER_IMAGE: codex-linux-server:ci-${{ github.run_id }}-${{ github.run_attempt }}
       CONTAINER_NAME: codex-linux-server-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      DATA_VOLUME: codex-security-data-ci-${{ github.run_id }}-${{ github.run_attempt }}
       HOST_PORT: "8080"
+      WEBAUTHN_RP_ID: localhost
+      WEBAUTHN_ORIGIN: http://localhost:8080
+      SESSION_SECRET_FILE: ${{ github.workspace }}/.ci-secrets/session_secret
+      WEBAUTHN_BOOTSTRAP_TOKEN_FILE: ${{ github.workspace }}/.ci-secrets/webauthn_bootstrap_token
+      DATA_ENCRYPTION_KEY_FILE: ${{ github.workspace }}/.ci-secrets/data_encryption_key
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
 
-      - name: Test non-destructive container behavior (mock Docker)
-        run: python3 -m unittest discover -s tests -v
+      - name: Set up Java 21 for Maven verification
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: java-biff-planner/pom.xml
+
+      - name: Validate shell and Python syntax
+        run: |
+          for script in scripts/*.sh docker/entrypoint.sh; do bash -n "$script"; done
+          python3 -m py_compile app/server.py app/privacy.py app/data_manager.py scripts/rotate-data-encryption-key.py scripts/data-manager.py
+
+      - name: Run Python privacy, data, and container safety tests
+        run: |
+          python3 -m venv .ci-python
+          .ci-python/bin/pip install --disable-pip-version-check -r requirements.txt
+          PYTHONPATH=app .ci-python/bin/python -m unittest discover -s tests -v
+
+      - name: Verify versioned data manager
+        run: |
+          python3 scripts/data-manager.py --db /tmp/managed-data.db init
+          python3 scripts/data-manager.py --db /tmp/managed-data.db import data/biff-2026/seed.json
+          python3 scripts/data-manager.py --db /tmp/managed-data.db verify
+          python3 scripts/data-manager.py --db /tmp/managed-data.db export --output /tmp/managed-data-backup.json
+          test -s /tmp/managed-data-backup.json
+
+      - name: Verify Java compiler, Maven, and BIFF planner
+        run: |
+          chmod +x scripts/verify-java-toolchain.sh
+          ./scripts/verify-java-toolchain.sh
+
+      - name: Create ephemeral canary secret files
+        run: |
+          umask 077
+          mkdir -p .ci-secrets
+          python3 -c 'import secrets; print("CI_SESSION_" + secrets.token_urlsafe(40))' > .ci-secrets/session_secret
+          python3 -c 'import secrets; print("CI_BOOTSTRAP_" + secrets.token_urlsafe(40))' > .ci-secrets/webauthn_bootstrap_token
+          python3 -c 'import base64,secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii"))' > .ci-secrets/data_encryption_key
+          chmod 600 .ci-secrets/*
 
       - name: Show Docker version
         run: docker version
@@ -59,10 +122,71 @@ jobs:
           chmod +x scripts/run-latest-linux.sh
           ./scripts/run-latest-linux.sh
 
-      - name: Build and start container server
+      - name: Build and start security-key protected container server
         run: |
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh
+          container_id="$(docker container inspect --format '{{.Id}}' "${CONTAINER_NAME}")"
+          [[ "$container_id" =~ ^[0-9a-f]{64}$ ]]
+          echo "SERVER_CONTAINER_ID=$container_id" >> "$GITHUB_ENV"
+
+      - name: Verify published host port and security gate
+        timeout-minutes: 4
+        run: |
+          set -euo pipefail
+          base_url="http://127.0.0.1:${HOST_PORT}"
+          ready=false
+          for attempt in {1..30}; do
+            if curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/healthz" >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != true ]]; then
+            echo "ERROR: Published host port did not become healthy." >&2
+            docker logs "${SERVER_CONTAINER_ID}" >&2 || true
+            exit 1
+          fi
+          page="$(curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/")"
+          grep -q 'Security Key Required' <<< "$page"
+          status="$(curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/api/security/status")"
+          python3 -c 'import json,sys; assert json.load(sys.stdin)["security_key_required"] is True' <<< "$status"
+          headers="$(curl --connect-timeout 2 --max-time 5 -fsSI "${base_url}/")"
+          tr -d '\r' <<< "$headers" | grep -qi '^X-Frame-Options: DENY$'
+
+      - name: Verify Java toolchain inside retained server container
+        run: |
+          docker exec "${SERVER_CONTAINER_ID}" /bin/bash -lc '
+            set -e
+            java -version
+            javac -version
+            mvn -version
+            java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar toolchain
+            java -jar /opt/java-biff-planner/target/biff-planner-1.0.0.jar summary >/dev/null
+          '
+
+      - name: Run simulated secret-exfiltration attacks
+        run: |
+          chmod +x scripts/security-attack-simulation.sh
+          ./scripts/security-attack-simulation.sh
+
+      - name: Verify redacted key inventory
+        run: |
+          chmod +x scripts/list-registered-security-keys.sh
+          output="$(./scripts/list-registered-security-keys.sh)"
+          echo "$output"
+          echo "$output" | grep -q '^registered_security_keys=0$'
+          echo "$output" | grep -q '^private_key_stored=false$'
 
       - name: Show built server image
-        run: docker image inspect "${SERVER_IMAGE}" --format 'Image={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
+        run: |
+          image_id="$(docker container inspect --format '{{.Image}}' "${SERVER_CONTAINER_ID}")"
+          docker image inspect "$image_id" --format 'Image={{.Id}} Tags={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
+
+      - name: Remove CI canary secret files only
+        if: always()
+        run: |
+          # Retain containers and data volumes until the hosted runner is discarded.
+          rm -rf .ci-secrets
+
