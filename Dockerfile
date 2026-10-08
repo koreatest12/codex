@@ -42,6 +42,17 @@ RUN mkdir -p /data \
     && rm -f /tmp/managed-data.db \
     && chown -R www-data:www-data /data /opt/app
 
+# Include a sanitized snapshot of repository sources and documentation.
+# Secret files, databases and local caches are excluded by .dockerignore.
+COPY --chown=www-data:www-data . /opt/codex-source/
+RUN test -f /opt/codex-source/README.md \
+    && test -f /opt/codex-source/docs/DOCKER_OPERATIONS.md \
+    && test -f /opt/codex-source/tests/test_privacy.py \
+    && test -f /opt/codex-source/data/biff-2026/seed.json \
+    && test ! -e /opt/codex-source/.env \
+    && test ! -e /opt/codex-source/secrets \
+    && test ! -e /opt/codex-source/.git
+
 VOLUME ["/data"]
 
 EXPOSE 8080
