@@ -38,6 +38,5 @@ secrets:
     file: ./secrets/data_encryption_key
 
 volumes:
+  # Keep project-scoped Compose volume naming to preserve existing databases.
   security-data:
-    # Match the volume created by scripts/prepare-docker-storage.sh
-    name: ${DATA_VOLUME:-codex-security-data}

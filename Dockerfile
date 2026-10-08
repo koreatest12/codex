@@ -44,7 +44,16 @@ RUN mkdir -p /data \
 
 # Include a sanitized snapshot of repository sources and documentation.
 # Secret files, databases and local caches are excluded by .dockerignore.
-COPY --chown=www-data:www-data . /opt/codex-source/
+# Only explicit project paths are copied: arbitrary local files outside these paths are excluded.
+COPY --chown=www-data:www-data README.md SECURITY.md CLAUDE.md LICENSE Dockerfile compose.yaml requirements.txt .dockerignore .gitignore .env.example /opt/codex-source/
+COPY --chown=www-data:www-data .github/ /opt/codex-source/.github/
+COPY --chown=www-data:www-data app/ /opt/codex-source/app/
+COPY --chown=www-data:www-data docker/ /opt/codex-source/docker/
+COPY --chown=www-data:www-data docs/ /opt/codex-source/docs/
+COPY --chown=www-data:www-data scripts/ /opt/codex-source/scripts/
+COPY --chown=www-data:www-data tests/ /opt/codex-source/tests/
+COPY --chown=www-data:www-data java-biff-planner/ /opt/codex-source/java-biff-planner/
+COPY --chown=www-data:www-data data/biff-2026/seed.json /opt/codex-source/data/biff-2026/seed.json
 RUN test -f /opt/codex-source/README.md \
     && test -f /opt/codex-source/docs/DOCKER_OPERATIONS.md \
     && test -f /opt/codex-source/tests/test_privacy.py \

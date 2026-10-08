@@ -3,19 +3,6 @@ name: Docker Image CI
 on:
   push:
     branches: ["main"]
-    paths:
-      - "Dockerfile"
-      - ".dockerignore"
-      - "compose.yaml"
-      - "requirements.txt"
-      - "app/**"
-      - "docker/**"
-      - "java-biff-planner/**"
-      - "scripts/**"
-      - "tests/**"
-      - "data/biff-2026/seed.json"
-      - "docs/**"
-      - ".github/workflows/docker-image-ci.yml"
   pull_request:
     branches: ["main"]
   workflow_dispatch:

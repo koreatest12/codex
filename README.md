@@ -249,8 +249,8 @@ data, security keys, databases and backups are excluded by .dockerignore.
 
 On an Ubuntu Server host, scripts/install-docker-ubuntu.sh can install
 Docker Engine, Buildx and Compose (with sudo). Run
-scripts/prepare-docker-storage.sh to create or reuse the persistent
-codex-security-data named volume, then scripts/build-image.sh to build
+scripts/prepare-docker-storage.sh to detect and reuse the existing
+Compose project-specific persistent data volume, then scripts/build-image.sh to build
 and test the local image.
 
 The separate Docker Image CI workflow checks pull-request images and

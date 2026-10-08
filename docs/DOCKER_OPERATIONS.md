@@ -25,12 +25,17 @@ use Docker Desktop with WSL2 rather than this Ubuntu-only installer.
 
 ## 2. Create/reuse a persistent logical disk (Docker volume)
 
+    bash scripts/generate-security-env.sh localhost http://localhost:8080
     sudo bash scripts/prepare-docker-storage.sh
-    sudo docker volume inspect codex-security-data
+    sudo docker compose config --format json
 
-The Docker volume name defaults to codex-security-data. The Compose volume
-uses this exact name and mounts it at /data. Existing volumes are reused
-and never intentionally wiped on container recreation.
+By default the script detects the effective Docker Compose volume name
+(such as codex_security-data when the Compose project is codex) and mounts
+it at /data. It reuses existing project-scoped volumes to preserve saved
+credentials and SQLite data. When using the separate manual Docker run
+script, use bash scripts/prepare-docker-storage.sh --manual; that method
+retains its original codex-security-data default. Run that mode with sudo
+on root-controlled Ubuntu Docker Engine hosts.
 
 A Docker named volume is NOT an allocated physical disk, a newly formatted
 partition, or a reserved storage capacity. Provision/encrypt your own block
@@ -41,10 +46,9 @@ the saved WebAuthn credential records and encrypted private-value vault.
 
 ## 3. Generate secrets once, then build and start the server
 
-    bash scripts/generate-security-env.sh localhost http://localhost:8080
-    bash scripts/build-image.sh
-    docker compose up -d --no-build
-    docker compose ps
+    sudo bash scripts/build-image.sh
+    sudo docker compose up -d --no-build
+    sudo docker compose ps
     curl -fsS http://127.0.0.1:8080/healthz
 
 Generation refuses to overwrite existing secrets or .env. To set up a real
@@ -53,7 +57,7 @@ reverse proxy. The published app port is loopback-only by default. A FIDO2
 hardware key must be registered interactively in the browser before
 protected data access can work.
 
-Check logs: docker compose logs -f web
+Check logs: sudo docker compose logs -f web
 
 ## 4. CI image builds and the registry
 
@@ -75,8 +79,8 @@ image CI build is NOT a successful deployment to a physical server.
 To use a published image after it exists, set SERVER_IMAGE in your
 local .env to an existing pinned SHA image tag and run:
 
-    docker compose pull web
-    docker compose up -d --no-build
+    sudo docker compose pull web
+    sudo docker compose up -d --no-build
 
 This preserves the named /data volume. If the GHCR package is private,
 authenticate with docker login ghcr.io using an appropriate access token.
@@ -86,16 +90,17 @@ temporary running server, /healthz, WebAuthn gates, and defense tests.
 
 ## 5. Backups and disaster recovery
 
-To avoid SQLite corruption, stop writes before file-based backup. On
+To avoid SQLite inconsistencies, stop writes before file-based backup. On
 your own host, use a locked-down backup directory:
 
     mkdir -p backups
     chmod 700 backups
-    docker compose stop web
-    docker run --rm -v codex-security-data:/data:ro \
+    sudo docker compose stop web
+    volume=$(sudo docker compose config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["volumes"]["security-data"]["name"])')
+    sudo docker run --rm -v "$volume:/data:ro" \
       -v "$PWD/backups:/backup" ubuntu:latest \
       sh -c 'tar -czf /backup/codex-data-backup.tar.gz -C /data .'
-    docker compose start web
+    sudo docker compose start web
     chmod 600 backups/codex-data-backup.tar.gz
 
 Keep the backup confidential and encrypt/offload it separately. Store a
