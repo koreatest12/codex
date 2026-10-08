@@ -38,11 +38,18 @@ Real domain:
 
 For a non-localhost domain, terminate TLS with an HTTPS reverse proxy/load balancer and keep this container bound to localhost.
 
-Then start the server:
+Then create a new server without replacing any existing container. Export the
+values matching your configuration (the following is the localhost example).
+The generated `.env` is a Compose dotenv file, not a shell script; do not source it:
 
 ```bash
-docker compose up -d --build
+export WEBAUTHN_RP_ID=localhost
+export WEBAUTHN_ORIGIN=http://localhost:8080
+export WEBAUTHN_RP_NAME="Codex Container Server"
+bash scripts/deploy-container-server.sh
 ```
+
+If the default container name already exists, the script exits safely. See [Script deployment](#script-deployment) for a separate test deployment.
 
 Open the exact URL configured in `WEBAUTHN_ORIGIN`. For the first registration only, read the token locally from `secrets/webauthn_bootstrap_token`, enter it in the registration page, and register your hardware security key. The hardware private key remains inside the authenticator; only credential/public-key data is stored in the server database.
 
@@ -59,6 +66,11 @@ After login, use **백업 보안키 추가** to register a second hardware key. 
 7. GitHub Actions verifies the security gate, status endpoint, and response security headers.
 
 ## Docker Compose
+
+Compose has a different lifecycle from the preservation-first deployment script.
+`docker compose up -d --build` can recreate an existing Compose-managed container.
+Do not use it to test these changes or update a live deployment when containers must
+be preserved. The commands below are for an explicitly intended Compose deployment.
 
 Start:
 
@@ -78,27 +90,72 @@ Logs:
 docker compose logs -f
 ```
 
-Stop:
+Avoid `docker compose down` when preserving containers: it removes the project's containers.
+The named `security-data` volume persists registered credential public keys and encrypted vault data when the container is recreated. Never remove its volume to perform an update.
 
-```bash
-docker compose down
-```
-
-The named `security-data` volume persists registered credential public keys when the container is recreated.
+For a separate Compose deployment, use a unique project name, container name, image
+tag, and unused host port. Changing only the project name is insufficient because
+this file declares `container_name` explicitly. A fresh project gets its own
+`security-data` volume by default; do not override it to share an active server's
+volume. Set `WEBAUTHN_ORIGIN` to match the separate deployment's exact browser URL.
 
 ## Script deployment
 
 If you prefer the deployment script, load only the non-secret WebAuthn configuration and use the generated secret files:
 
 ```bash
-set -a
-source .env
-set +a
+export WEBAUTHN_RP_ID=localhost
+export WEBAUTHN_ORIGIN=http://localhost:8080
+export WEBAUTHN_RP_NAME="Codex Container Server"
 chmod +x scripts/deploy-container-server.sh
 ./scripts/deploy-container-server.sh
 ```
 
-The deployment script mounts `secrets/session_secret` and `secrets/webauthn_bootstrap_token` read-only instead of putting their values in Docker environment variables.
+The deployment script mounts `secrets/session_secret`, `secrets/webauthn_bootstrap_token`, and `secrets/data_encryption_key` read-only instead of putting their values in Docker environment variables.
+
+### Container and data preservation
+
+The script never deletes, stops, restarts, or replaces an existing container.
+An existing `CONTAINER_NAME`, even when stopped, causes an early exit before pulling
+or building. Failure to list containers also stops deployment. A competing attempt
+to claim the same name fails safely at creation. The new container uses the immutable
+image ID produced by this build, and subsequent checks use its captured container ID.
+
+Created containers and data volumes remain after success or failure, including a
+port conflict or failed readiness check. The legacy `CLEANUP_AFTER_TEST` setting is
+ignored with a warning. There is no implicit cleanup or replacement. Readiness
+checks have bounded retries and per-request timeouts, so an unresponsive service
+fails verification instead of waiting indefinitely.
+
+To test alongside an existing server, choose a fresh container name, image tag,
+data volume, and unused host port. For example, after checking those are free and
+loading your non-secret configuration as above:
+
+```bash
+CONTAINER_NAME=codex-linux-server-check-1 \
+SERVER_IMAGE=codex-linux-server:check-1 \
+DATA_VOLUME=codex-security-data-check-1 \
+HOST_PORT=9090 \
+WEBAUTHN_ORIGIN=http://localhost:9090 \
+bash scripts/deploy-container-server.sh
+```
+
+This localhost example assumes `WEBAUTHN_RP_ID=localhost`. Use matching HTTPS origin
+and RP settings for a real domain. Do not reuse that name or volume for another
+parallel test. Reusing an active server's data volume lets both servers write the
+same databases and can change existing credentials or encrypted vault data.
+A fresh volume starts empty and does not migrate the existing deployment.
+
+Inspect retained containers without changing them:
+
+```bash
+docker ps -a --filter 'name=^/codex-linux-server$'
+docker container inspect --format 'ID={{.Id}} Status={{.State.Status}}' codex-linux-server
+```
+
+The base-image smoke test also retains its container after it exits. Retention uses
+disk space; removal is a separate, explicit operator decision. These changes do not
+perform a live deployment or authorize replacing an existing server.
 
 Default local URL:
 
@@ -127,13 +184,21 @@ The workflow automatically:
 3. Builds the WebAuthn-protected server image.
 4. Creates an ephemeral CI secret and bootstrap token at runtime.
 5. Starts the server container.
-6. Confirms `/healthz`.
-7. Confirms that the unauthenticated page requires a security key.
-8. Confirms the WebAuthn status API is enabled.
-9. Confirms security response headers.
+6. Confirms `/healthz`, including the published host port with bounded curl timeouts.
+7. Confirms from the host that the unauthenticated page requires a security key.
+8. Confirms from the host that the WebAuthn status API is enabled.
+9. Confirms security response headers from the host.
 10. Runs a disposable canary-based attack simulation for secret leakage and unauthorized registration.
 11. Verifies that the WebAuthn database has no hardware private-key field.
-12. Confirms the final image was built successfully.
+12. Verifies the Java toolchain inside the retained server container.
+13. Confirms the actual server image was built successfully.
+
+Python privacy, versioned-data, and mock-Docker preservation tests run before the
+live container checks. Workflow runs use distinct image tags, container names, and
+data volume names based on the GitHub run ID and attempt. No step removes
+containers or data volumes. Canary secret files alone are cleaned up at the end;
+CI containers are retained only for the lifetime of the GitHub-hosted runner and
+are not persistent storage after runner teardown.
 
 CI cannot physically press a hardware key, so cryptographic registration/login must be completed interactively in a browser after deployment.
 
@@ -211,8 +276,11 @@ Existing installs must create it once:
 ```bash
 chmod +x scripts/generate-data-encryption-key.sh
 ./scripts/generate-data-encryption-key.sh
-docker compose up -d --build
 ```
+
+This only prepares the key file. Applying it to an existing server requires an
+explicitly planned deployment; Compose may recreate the container. Do not run a
+live update merely to test these preservation changes.
 
 See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURITY.md](SECURITY.md).
 
@@ -238,3 +306,19 @@ Inside the container the command is installed as `codex-data-manager`, using `/d
 The manager provides revisions, SHA-256 integrity checks, history, optimistic update checks, import/export, and a sensitive-data guard. Reservation/contact values continue to belong only in the encrypted private-data vault.
 
 See [docs/DATA_MANAGEMENT.md](docs/DATA_MANAGEMENT.md).
+
+
+## Container safety regression tests
+
+Run only the mock-Docker preservation tests without Docker or network access:
+
+```bash
+python3 -m unittest discover -s tests -p 'test_container*.py' -v
+for script in scripts/deploy-container-server.sh scripts/run-latest-linux.sh; do
+  bash -n "$script" || exit 1
+done
+```
+
+These tests exercise name conflicts, ID targeting, bounded checks, and retention
+without creating or removing real containers. The full test suite also requires
+the Python dependencies listed in `requirements.txt`.

@@ -17,6 +17,7 @@ on:
       - "docker/**"
       - "requirements.txt"
       - "scripts/**"
+      - "tests/**"
       - "java-biff-planner/**"
       - "docs/biff-2026/**"
       - "SECURITY.md"
@@ -36,6 +37,7 @@ on:
       - "docker/**"
       - "requirements.txt"
       - "scripts/**"
+      - "tests/**"
       - "java-biff-planner/**"
       - "docs/biff-2026/**"
       - "docs/DATA_MANAGEMENT.md"
@@ -57,9 +59,9 @@ jobs:
     timeout-minutes: 20
     env:
       LINUX_IMAGE: ubuntu:latest
-      SERVER_IMAGE: codex-linux-server:ci
-      CONTAINER_NAME: codex-linux-server-ci
-      DATA_VOLUME: codex-security-data-ci
+      SERVER_IMAGE: codex-linux-server:ci-${{ github.run_id }}-${{ github.run_attempt }}
+      CONTAINER_NAME: codex-linux-server-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      DATA_VOLUME: codex-security-data-ci-${{ github.run_id }}-${{ github.run_attempt }}
       HOST_PORT: "8080"
       WEBAUTHN_RP_ID: localhost
       WEBAUTHN_ORIGIN: http://localhost:8080
@@ -81,10 +83,10 @@ jobs:
 
       - name: Validate shell and Python syntax
         run: |
-          bash -n scripts/*.sh docker/entrypoint.sh
+          for script in scripts/*.sh docker/entrypoint.sh; do bash -n "$script"; done
           python3 -m py_compile app/server.py app/privacy.py app/data_manager.py scripts/rotate-data-encryption-key.py scripts/data-manager.py
 
-      - name: Run Python privacy tests
+      - name: Run Python privacy, data, and container safety tests
         run: |
           python3 -m venv .ci-python
           .ci-python/bin/pip install --disable-pip-version-check -r requirements.txt
@@ -124,10 +126,38 @@ jobs:
         run: |
           chmod +x scripts/deploy-container-server.sh
           ./scripts/deploy-container-server.sh
+          container_id="$(docker container inspect --format '{{.Id}}' "${CONTAINER_NAME}")"
+          [[ "$container_id" =~ ^[0-9a-f]{64}$ ]]
+          echo "SERVER_CONTAINER_ID=$container_id" >> "$GITHUB_ENV"
 
-      - name: Verify Java toolchain inside built container image
+      - name: Verify published host port and security gate
+        timeout-minutes: 4
         run: |
-          docker run --rm --entrypoint /bin/bash "${SERVER_IMAGE}" -lc '
+          set -euo pipefail
+          base_url="http://127.0.0.1:${HOST_PORT}"
+          ready=false
+          for attempt in {1..30}; do
+            if curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/healthz" >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != true ]]; then
+            echo "ERROR: Published host port did not become healthy." >&2
+            docker logs "${SERVER_CONTAINER_ID}" >&2 || true
+            exit 1
+          fi
+          page="$(curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/")"
+          grep -q 'Security Key Required' <<< "$page"
+          status="$(curl --connect-timeout 2 --max-time 5 -fsS "${base_url}/api/security/status")"
+          python3 -c 'import json,sys; assert json.load(sys.stdin)["security_key_required"] is True' <<< "$status"
+          headers="$(curl --connect-timeout 2 --max-time 5 -fsSI "${base_url}/")"
+          tr -d '\r' <<< "$headers" | grep -qi '^X-Frame-Options: DENY$'
+
+      - name: Verify Java toolchain inside retained server container
+        run: |
+          docker exec "${SERVER_CONTAINER_ID}" /bin/bash -lc '
             set -e
             java -version
             javac -version
@@ -150,11 +180,13 @@ jobs:
           echo "$output" | grep -q '^private_key_stored=false$'
 
       - name: Show built server image
-        run: docker image inspect "${SERVER_IMAGE}" --format 'Image={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
+        run: |
+          image_id="$(docker container inspect --format '{{.Image}}' "${SERVER_CONTAINER_ID}")"
+          docker image inspect "$image_id" --format 'Image={{.Id}} Tags={{.RepoTags}} Size={{.Size}} Created={{.Created}}'
 
-      - name: Clean up CI container and canary secrets
+      - name: Remove CI canary secret files only
         if: always()
         run: |
-          docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
-          docker volume rm "${DATA_VOLUME}" >/dev/null 2>&1 || true
+          # Retain containers and data volumes until the hosted runner is discarded.
           rm -rf .ci-secrets
+
