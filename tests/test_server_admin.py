@@ -1,4 +1,8 @@
-"""Integration gates: password never replaces the hardware security key."""
+"""Integration gates: password never replaces the hardware security key.
+
+The class imports server under a private environment, never inheriting
+GitHub Actions' *_FILE settings. Cleanups run even when setUpClass fails.
+"""
 import base64
 import importlib
 import json
@@ -17,6 +21,7 @@ class AdminServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temporary.cleanup)
         folder = Path(cls.temporary.name)
         cls.password = "only-for-test-Password-1234567890!"
         cls.account_file = folder / "admin_account"
@@ -24,29 +29,33 @@ class AdminServerTests(unittest.TestCase):
             json.dumps(make_account("admin", cls.password)), encoding="utf-8"
         )
         options = {
-            "SESSION_SECRET_FILE": "",
-            "WEBAUTHN_BOOTSTRAP_TOKEN_FILE": "",
-            "DATA_ENCRYPTION_KEY_FILE": "",
             "SESSION_SECRET": "integration-test-" + secrets.token_urlsafe(40),
             "WEBAUTHN_RP_ID": "localhost",
             "WEBAUTHN_ORIGIN": "http://localhost:8080",
             "WEBAUTHN_BOOTSTRAP_TOKEN": secrets.token_urlsafe(30),
-            "DATA_ENCRYPTION_KEY": base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii"),
+            "DATA_ENCRYPTION_KEY": base64.urlsafe_b64encode(
+                secrets.token_bytes(32)
+            ).decode("ascii"),
             "WEBAUTHN_DB_PATH": str(folder / "webauthn.db"),
             "MANAGED_DATA_DB_PATH": str(folder / "managed-data.db"),
             "ADMIN_ACCOUNT_FILE": str(cls.account_file),
         }
-        cls.env = patch.dict(os.environ, options)
+        # clear=True also removes any SESSION_SECRET_FILE / other GitHub
+        # runner variables, preventing the historical duplicate-source error.
+        cls.env = patch.dict(os.environ, options, clear=True)
         cls.env.start()
-        sys.modules.pop("server", None)
+        cls.addClassCleanup(cls.env.stop)
+
+        previous_server = sys.modules.pop("server", None)
+
+        def restore_server():
+            sys.modules.pop("server", None)
+            if previous_server is not None:
+                sys.modules["server"] = previous_server
+
+        cls.addClassCleanup(restore_server)
         cls.server = importlib.import_module("server")
         cls.server.app.config["TESTING"] = True
-
-    @classmethod
-    def tearDownClass(cls):
-        sys.modules.pop("server", None)
-        cls.env.stop()
-        cls.temporary.cleanup()
 
     def setUp(self):
         self.client = self.server.app.test_client()

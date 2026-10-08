@@ -15,6 +15,7 @@ from flask import Flask, Response, jsonify, render_template, request, session
 
 from privacy import PrivacyCipher, mask_value, validate_kind
 from admin_auth import AdminAccount
+from secret_config import require_secret
 from data_manager import DataManager, DataManagerError, NotFound, RevisionConflict
 from webauthn import (
     base64url_to_bytes,
@@ -38,29 +39,6 @@ def require_env(name: str) -> str:
     if not value:
         raise RuntimeError(f"{name} must be configured")
     return value
-
-
-def require_secret(name: str, file_name: str) -> str:
-    direct = os.environ.get(name, "").strip()
-    secret_file = os.environ.get(file_name, "").strip()
-
-    if direct and secret_file:
-        raise RuntimeError(f"configure only one of {name} or {file_name}")
-
-    if secret_file:
-        path = Path(secret_file)
-        try:
-            value = path.read_text(encoding="utf-8").strip()
-        except OSError as exc:
-            raise RuntimeError(f"unable to read {file_name}") from exc
-        if not value:
-            raise RuntimeError(f"{file_name} points to an empty secret")
-        return value
-
-    if direct:
-        return direct
-
-    raise RuntimeError(f"{name} or {file_name} must be configured")
 
 
 SESSION_SECRET = require_secret("SESSION_SECRET", "SESSION_SECRET_FILE")
