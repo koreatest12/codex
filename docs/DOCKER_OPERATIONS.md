@@ -25,12 +25,16 @@ use Docker Desktop with WSL2 rather than this Ubuntu-only installer.
 
 ## 2. Create/reuse a persistent logical disk (Docker volume)
 
-    sudo bash scripts/prepare-docker-storage.sh
-    sudo docker volume inspect codex-security-data
+    bash scripts/generate-security-env.sh localhost http://localhost:8080
+    bash scripts/prepare-docker-storage.sh
+    docker compose config --format json
 
-The Docker volume name defaults to codex-security-data. The Compose volume
-uses this exact name and mounts it at /data. Existing volumes are reused
-and never intentionally wiped on container recreation.
+By default the script detects the effective Docker Compose volume name
+(such as codex_security-data when the Compose project is codex) and mounts
+it at /data. It reuses existing project-scoped volumes to preserve saved
+credentials and SQLite data. When using the separate manual Docker run
+script, use bash scripts/prepare-docker-storage.sh --manual; that method
+retains its original codex-security-data default.
 
 A Docker named volume is NOT an allocated physical disk, a newly formatted
 partition, or a reserved storage capacity. Provision/encrypt your own block
@@ -41,7 +45,6 @@ the saved WebAuthn credential records and encrypted private-value vault.
 
 ## 3. Generate secrets once, then build and start the server
 
-    bash scripts/generate-security-env.sh localhost http://localhost:8080
     bash scripts/build-image.sh
     docker compose up -d --no-build
     docker compose ps
@@ -92,7 +95,8 @@ your own host, use a locked-down backup directory:
     mkdir -p backups
     chmod 700 backups
     docker compose stop web
-    docker run --rm -v codex-security-data:/data:ro \
+    volume=$(docker compose config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["volumes"]["security-data"]["name"])')
+    docker run --rm -v "$volume:/data:ro" \
       -v "$PWD/backups:/backup" ubuntu:latest \
       sh -c 'tar -czf /backup/codex-data-backup.tar.gz -C /data .'
     docker compose start web
