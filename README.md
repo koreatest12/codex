@@ -238,3 +238,25 @@ Inside the container the command is installed as `codex-data-manager`, using `/d
 The manager provides revisions, SHA-256 integrity checks, history, optimistic update checks, import/export, and a sensitive-data guard. Reservation/contact values continue to belong only in the encrypted private-data vault.
 
 See [docs/DATA_MANAGEMENT.md](docs/DATA_MANAGEMENT.md).
+
+
+## Docker image CI, full source snapshot and persistent storage
+
+Every built Ubuntu image now packages a **sanitized copy of the repository**
+under /opt/codex-source, including source, documentation, tests, workflow
+definitions and the public data seed. Local environment files, private
+data, security keys, databases and backups are excluded by .dockerignore.
+
+On an Ubuntu Server host, scripts/install-docker-ubuntu.sh can install
+Docker Engine, Buildx and Compose (with sudo). Run
+scripts/prepare-docker-storage.sh to create or reuse the persistent
+codex-security-data named volume, then scripts/build-image.sh to build
+and test the local image.
+
+The separate Docker Image CI workflow checks pull-request images and
+publishes successful main-branch images to GitHub Container Registry
+as latest and immutable commit-SHA tags. This creates image artifacts,
+but does not provision or deploy a remote cloud server.
+
+See [Docker operations and backups](docs/DOCKER_OPERATIONS.md)
+for commands, data preservation, image upgrades and security limits.
