@@ -260,3 +260,27 @@ but does not provision or deploy a remote cloud server.
 
 See [Docker operations and backups](docs/DOCKER_OPERATIONS.md)
 for commands, data preservation, image upgrades and security limits.
+
+
+## Optional administrator username, password and final runtime status
+
+To set up a local single-administrator account without weakening hardware-key
+requirements, first generate the existing .env and local secret files if
+this is a new deployment. Then run:
+
+    python3 scripts/setup-admin-account.py --username admin
+    sudo docker compose -f compose.yaml -f compose.account.yaml up -d --build
+
+The password is randomly generated locally, shown once in an interactive
+terminal, and **never committed to Git**. Only a salted scrypt hash is
+mounted to the container as a read-only secret. After entering credentials,
+users must still complete a FIDO2/WebAuthn challenge. Existing FIDO2-only
+deployments are left unchanged unless the Compose account overlay is enabled.
+
+After login, the protected "서버 최종 운영 상태" UI shows authentication
+mode, key registrations, vault count, container uptime and filesystem
+capacity. For a host-side summary without printing secrets:
+
+    sudo bash scripts/final-status.sh
+
+See [administrator access and runtime status](docs/DOCKER_OPERATIONS.md).

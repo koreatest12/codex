@@ -131,6 +131,57 @@ async function authenticateSecurityKey() {
   });
 }
 
+
+document.getElementById("admin-account-login")?.addEventListener("submit", async event => {
+  event.preventDefault();
+  const username = document.getElementById("admin-username");
+  const password = document.getElementById("admin-password");
+  try {
+    setStatus("계정 정보를 확인하고 있습니다.");
+    await jsonFetch("/api/security/account/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username.value.trim(), password: password.value }),
+    });
+    password.value = "";
+    window.location.reload();
+  } catch (error) {
+    password.value = "";
+    setStatus(error.message, true);
+  }
+});
+
+async function loadServerStatus() {
+  const output = document.getElementById("server-status-output");
+  if (!output) return;
+  output.textContent = "운영 상태를 확인하고 있습니다.";
+  try {
+    const data = await jsonFetch("/api/system/status");
+    const gb = value => (value / (1024 ** 3)).toFixed(2) + " GiB";
+    output.textContent = [
+      "서비스: " + data.service,
+      "상태: " + data.health,
+      "실행 시간: " + data.uptime_seconds + "초",
+      "관리자 ID: " + data.admin_username,
+      "인증: " + data.authentication,
+      "등록된 보안키: " + data.registered_security_keys + "개",
+      "암호화 개인정보: " + data.encrypted_private_value_count + "건",
+      "암호화: " + data.encryption_at_rest,
+      "데이터 저장소: " + data.data_storage_path,
+      "데이터베이스 파일: " + (data.database_present ? "있음" : "없음"),
+      "저장 공간(컨테이너에서 관측): " + gb(data.storage_bytes_used) +
+        " 사용 / " + gb(data.storage_bytes_total) + " 총량",
+      "저장 공간 여유: " + gb(data.storage_bytes_free),
+    ].join("\n");
+  } catch (error) {
+    output.textContent = "운영 상태 조회 실패";
+    setStatus(error.message, true);
+  }
+}
+
+document.getElementById("refresh-server-status")?.addEventListener("click", loadServerStatus);
+if (document.getElementById("server-status-panel")) loadServerStatus();
+
 document.getElementById("register-key")?.addEventListener("click", async () => {
   const token = document.getElementById("bootstrap-token")?.value || "";
   try {

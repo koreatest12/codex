@@ -45,7 +45,7 @@ RUN mkdir -p /data \
 # Include a sanitized snapshot of repository sources and documentation.
 # Secret files, databases and local caches are excluded by .dockerignore.
 # Only explicit project paths are copied: arbitrary local files outside these paths are excluded.
-COPY --chown=www-data:www-data README.md SECURITY.md CLAUDE.md LICENSE Dockerfile compose.yaml requirements.txt .dockerignore .gitignore .env.example /opt/codex-source/
+COPY --chown=www-data:www-data README.md SECURITY.md CLAUDE.md LICENSE Dockerfile compose.yaml compose.account.yaml requirements.txt .dockerignore .gitignore .env.example /opt/codex-source/
 COPY --chown=www-data:www-data .github/ /opt/codex-source/.github/
 COPY --chown=www-data:www-data app/ /opt/codex-source/app/
 COPY --chown=www-data:www-data docker/ /opt/codex-source/docker/

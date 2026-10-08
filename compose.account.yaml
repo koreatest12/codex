@@ -1,0 +1,13 @@
+# Opt-in mandatory administrator password + WebAuthn gate.
+# Keep the base compose.yaml unchanged for existing passkey-only installations.
+# Run: docker compose -f compose.yaml -f compose.account.yaml up -d --build
+services:
+  web:
+    environment:
+      ADMIN_ACCOUNT_FILE: /run/secrets/admin_account
+    secrets:
+      - admin_account
+
+secrets:
+  admin_account:
+    file: ./secrets/admin_account

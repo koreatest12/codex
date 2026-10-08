@@ -35,6 +35,17 @@ SESSION_SECRET_SOURCE="$(resolve_secret_file "$SESSION_SECRET_FILE")"
 BOOTSTRAP_TOKEN_SOURCE="$(resolve_secret_file "$WEBAUTHN_BOOTSTRAP_TOKEN_FILE")"
 DATA_ENCRYPTION_KEY_SOURCE="$(resolve_secret_file "$DATA_ENCRYPTION_KEY_FILE")"
 
+# Match the opt-in account gate used by compose.account.yaml.
+# A locally provisioned account hash is mounted read-only when present.
+ADMIN_ACCOUNT_MOUNT=()
+if [[ -n "${ADMIN_ACCOUNT_FILE:-}" || -f secrets/admin_account ]]; then
+  account_source="$(resolve_secret_file "${ADMIN_ACCOUNT_FILE:-secrets/admin_account}")"
+  ADMIN_ACCOUNT_MOUNT=(
+    --mount "type=bind,src=${account_source},dst=/run/secrets/admin_account,readonly"
+    -e "ADMIN_ACCOUNT_FILE=/run/secrets/admin_account"
+  )
+fi
+
 cleanup() {
   if [[ "${CLEANUP_AFTER_TEST}" == "true" ]]; then
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
@@ -70,6 +81,7 @@ docker run -d \
   -e "SESSION_SECRET_FILE=/run/secrets/session_secret" \
   -e "WEBAUTHN_BOOTSTRAP_TOKEN_FILE=/run/secrets/webauthn_bootstrap_token" \
   -e "DATA_ENCRYPTION_KEY_FILE=/run/secrets/data_encryption_key" \
+  "${ADMIN_ACCOUNT_MOUNT[@]}" \
   -e "WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID}" \
   -e "WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN}" \
   -e "WEBAUTHN_RP_NAME=${WEBAUTHN_RP_NAME:-Codex Container Server}" \

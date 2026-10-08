@@ -6,7 +6,16 @@ The container server requires WebAuthn authentication for protected access.
 
 Security properties:
 
-- No password fallback is implemented.
+- Password-only fallback is **never** permitted for protected routes.
+- Optional administrator account mode adds scrypt-hashed password verification
+  *before* the required FIDO2/WebAuthn ceremony; it does not replace it.
+- The single local credential file is generated on the host and mounted
+  read-only via compose.account.yaml. No password is placed in Git or Docker
+  environment variables, and no password is displayed in server logs.
+- Failed password authentication is capped at five failures per 15-minute
+  window, with a temporary lockout. Nginx also rate-limits security APIs.
+- Existing FIDO2-only installations are unchanged unless opt-in account
+  mode is enabled.
 - User verification is required during registration and authentication.
 - Registration requests prefer cross-platform authenticators such as FIDO2 hardware security keys.
 - The first key can only be registered with the bootstrap token.
@@ -38,7 +47,7 @@ docker compose up -d --build
 
 Place an HTTPS reverse proxy/load balancer in front of the localhost-bound container for remote access.
 
-Open the configured origin, enter the bootstrap token from `.env`, and register the first hardware security key.
+Open the configured origin, enter the bootstrap token from `secrets/webauthn_bootstrap_token`, and register the first hardware security key. If the account overlay is enabled, enter the local administrator password first.
 
 After first registration, keep at least one second FIDO2 key as a recovery key. Add it only while authenticated with the first key.
 
@@ -112,3 +121,16 @@ Back up `secrets/data_encryption_key` separately from the SQLite volume. If that
 For planned key rotation, use `scripts/rotate-data-encryption-key.py` while the application is stopped and after making a database backup.
 
 Never commit the key, reservation numbers, phone numbers, or other raw private values.
+
+
+## Optional admin password and protected runtime status
+
+See [docs/DOCKER_OPERATIONS.md](docs/DOCKER_OPERATIONS.md) for local one-time
+password provisioning and credential rotation. Account passwords cannot bypass
+a hardware security key. Never share administrator password output or the
+secrets/admin_account file; both are host-local.
+
+The /api/system/status route returns running application information only to
+an authenticated administrator (both factors if account mode is enabled).
+It does not expose password hashes, keys, token values or Docker daemon
+access. The public /healthz route remains deliberately minimal.
