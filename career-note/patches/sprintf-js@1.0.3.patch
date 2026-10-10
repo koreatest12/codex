@@ -1,0 +1,15 @@
+diff --git a/src/sprintf.js b/src/sprintf.js
+index c0fc7c08b2e6fe38de2883034b8d28c8f34e9866..249188ff6e669859a9e253e12abcae2ab5e03cbe 100644
+--- a/src/sprintf.js
++++ b/src/sprintf.js
+@@ -30,6 +30,10 @@
+             }
+             else if (node_type === "array") {
+                 match = parse_tree[i] // convenience purposes only
++                // Bound allocation before formatting, including direct format() calls.
++                if (Number(match[6]) > 10000 || Number(match[7]) > 100) {
++                    throw new RangeError('[sprintf] width or precision exceeds safe limit')
++                }
+                 if (match[2]) { // keyword argument
+                     arg = argv[cursor]
+                     for (k = 0; k < match[2].length; k++) {
