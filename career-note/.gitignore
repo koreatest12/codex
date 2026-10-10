@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.next/
+.wrangler/
+.sites-runtime/
+.vinext/
+.env*
+!.env.example
+*.tsbuildinfo
+public/pdf.worker.min.mjs
