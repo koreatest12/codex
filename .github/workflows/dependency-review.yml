@@ -8,9 +8,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-review:
+    # Fail closed: no runner allocation unless the owner explicitly opts in.
+    if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Review dependency changes
         uses: actions/dependency-review-action@v4

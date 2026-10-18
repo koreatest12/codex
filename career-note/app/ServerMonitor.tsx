@@ -4,7 +4,7 @@ import {Activity,RefreshCw,Database,HardDrive,ShieldCheck} from 'lucide-react';
 import {reliableGet} from './reliable-fetch';
 type Health={ok:boolean,checkedAt:string,session:string,checks:{name:string,status:string,ms:number}[]};
 export default function ServerMonitor({expanded,onRecovered}:{expanded:boolean,onRecovered:()=>Promise<void>}){
-const [health,setHealth]=useState<Health|null>(null),[busy,setBusy]=useState(false),[state,setState]=useState('점검 중'),[history,setHistory]=useState<{time:string,text:string}[]>([]),[auto,setAuto]=useState(true);
+const [health,setHealth]=useState<Health|null>(null),[busy,setBusy]=useState(false),[state,setState]=useState('점검 중'),[history,setHistory]=useState<{time:string,text:string}[]>([]),[auto,setAuto]=useState(false);
 const running=useRef(false),failed=useRef(false),callback=useRef(onRecovered),alive=useRef(true);callback.current=onRecovered;
 function log(text:string){if(alive.current)setHistory(h=>[{time:new Date().toLocaleTimeString('ko-KR'),text},...h].slice(0,20))}
 async function check(manual=false){if(running.current)return;running.current=true;setBusy(true);try{

@@ -50,14 +50,18 @@ on:
       - ".github/dependabot.yml"
       - "data/**"
   workflow_dispatch:
-  schedule:
-    - cron: "17 3 * * 1"
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-run:
+    # Fail closed: no runner allocation unless the owner explicitly opts in.
+    if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}
     name: Pull Ubuntu, build server, and verify container
     runs-on: ubuntu-24.04
     timeout-minutes: 20
