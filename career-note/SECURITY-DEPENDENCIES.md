@@ -32,6 +32,21 @@ and remove each patch only after checking its replacement behavior.
 Run `npm run test:security`, `node node_modules/typescript/bin/tsc --noEmit`,
 `npm run build`, and `pnpm audit` after installation. Regression tests cover
 ordinary brace expansion, deeply nested/malformed strings, direct AST input,
-normal sprintf formatting and excessive formatting parameters. A synthetic
+normal sprintf formatting and excessive formatting parameters. Precision checks
+cover `%f`, `%e`, and `%g`, the supported boundary of 100, rejection at 101,
+very large decimal specifiers, and direct `sprintf.format()` calls before
+numeric coercion. A synthetic
 DOCX extraction and drizzle-kit startup were also verified during this change.
 Browser interaction has not been verified in this environment.
+
+## Alert #66 verification — 2026-10-17
+
+A frozen pnpm installation applies the existing `sprintf-js@1.0.3` patch to
+Mammoth's argparse dependency. All six security regression tests pass,
+including the precision and direct-format cases above. `pnpm audit` still
+reports GHSA-hp3w-g68c-fv3c because the installed version remains 1.0.3 and no
+patched upstream version is listed. This is a local mitigation, not grounds
+to claim the alert is resolved. The guard intentionally throws a bounded
+RangeError; callers accepting untrusted format strings must still handle
+formatting errors. The application's Mammoth library usage does not accept
+user-supplied sprintf format strings.

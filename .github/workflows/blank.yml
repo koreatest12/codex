@@ -14,11 +14,18 @@ on:
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # This workflow contains a single job called "build"
   build:
+    # Fail closed: no runner allocation unless the owner explicitly opts in.
+    if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}
     # The type of runner that the job will run on
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

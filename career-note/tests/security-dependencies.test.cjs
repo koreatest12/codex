@@ -29,3 +29,21 @@ test('sprintf retains ordinary formatting and rejects excessive allocation', () 
     assert.throws(() => sprintf(pattern, 1), /safe limit/);
   }
 });
+
+test('sprintf guards precision for every numeric conversion', () => {
+  for (const conversion of ['f', 'e', 'g']) {
+    assert.equal(typeof sprintf(`%.100${conversion}`, 1.25), 'string');
+    for (const precision of ['101', '999999999', '9'.repeat(400)]) {
+      assert.throws(() => sprintf(`%.${precision}${conversion}`, 1.25), /safe limit/);
+    }
+  }
+});
+test('direct sprintf.format callers cannot bypass the precision guard', () => {
+  for (const conversion of ['f', 'e', 'g']) {
+    const tree = sprintf.parse(`%.101${conversion}`);
+    let coerced = false;
+    const value = { valueOf() { coerced = true; return 1.25; } };
+    assert.throws(() => sprintf.format(tree, [null, value]), /safe limit/);
+    assert.equal(coerced, false, 'reject unsafe precision before numeric coercion');
+  }
+});
