@@ -8,7 +8,7 @@
 
 ## 저장소에서 확인한 기반
 - Python 서버와 테스트, Java Maven 도구, career-note 웹앱이 함께 있다.
-- CI(blank.yml)는 현재 안내 문구만 출력하며 앱 테스트의 통과 근거가 아니다.
+- CI(blank.yml)는 기본 Python 단위 테스트와 셸 문법 검사를 실행한다.
 - Latest Linux Image and Container Server는 Python·Java·컨테이너 검증을 수행한다.
 - Docker Image CI는 컨테이너를 검증하며 main의 push 또는 수동 실행에서
   GHCR에 이미지를 게시할 수 있다. 이미지 게시와 실제 서버 배포는 구분한다.
@@ -62,3 +62,26 @@ ChatGPT에 실패한 GitHub Actions 실행 URL을 전달한다.
 - [ ] 테스트 PR에서 Codex 리뷰가 실제로 게시되었다.
 - [ ] 변경 영역의 실제 테스트를 실행했다.
 - [ ] 운영 대상과 배포·복구 절차를 확인했다.
+
+## GitHub Actions Skipped 수정 — 2026-10-22
+
+워크플로 4개(CI, Dependency Review, Docker Image CI, Latest Linux
+Image and Container Server)의 job 단계에 공통으로 있던
+`if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}` 조건 때문에,
+저장소 변수가 설정되지 않았을 때 실행이 `Skipped` 처리되었다.
+공개 저장소에서 표준 `ubuntu-24.04` GitHub-hosted runner는
+무료로 제공되므로 해당 작업 실행 차단 조건을 제거했다.
+
+- 이제 `main` push 및 PR은 관련 워크플로를 실행한다.
+  경로 필터가 있는 워크플로는 변경 대상 경로가 포함되어야 자동 실행된다.
+- CI는 기존의 "Hello world" 예제가 아닌 Python 테스트와 각 셸 스크립트
+  문법 검사로 바뀌었다. Python 테스트 성공은 Java/Node 테스트나
+  전체 배포 검증 성공을 의미하지 않는다.
+- Docker 이미지 GHCR **게시** 단계는 기존과 동일하게 `main`에서
+  수동 `workflow_dispatch` 실행과 `publish_image=true` 승인 조건을 유지한다.
+- 저장소가 비공개로 전환되거나 대형 러너를 사용하게 되면 Actions
+  요금이 발생할 수 있다. 패키지/아티팩트 저장 공간 정책도 별도 확인한다.
+- `Skipped`가 사라진 뒤 `failure`가 나오면 새로 노출된 실제 테스트 실패로
+  구분하고 해당 단계 로그에 따라 별도로 수정한다.
+
+관련 GitHub 문서: https://docs.github.com/en/billing/concepts/product-billing/github-actions
