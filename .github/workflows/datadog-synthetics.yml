@@ -1,38 +1,92 @@
-# This workflow will trigger Datadog Synthetic tests within your Datadog organisation
-# For more information on running Synthetic tests within your GitHub workflows see: https://docs.datadoghq.com/synthetics/cicd_integrations/github_actions/
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# To get started:
-
-# 1. Add your Datadog API (DD_API_KEY) and Application Key (DD_APP_KEY) as secrets to your GitHub repository. For more information, see: https://docs.datadoghq.com/account_management/api-app-keys/.
-# 2. Start using the action within your workflow
-
+# Optional Datadog integration: execute explicitly after configuring repository secrets.
+# This workflow never downloads or publishes credentials.
 name: Run Datadog Synthetic tests
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      test_search_query:
+        description: 'Datadog Synthetic test selection query'
+        required: true
+        default: 'tag:e2e-tests'
+        type: string
+      datadog_site:
+        description: 'Your Datadog site (e.g. datadoghq.com, datadoghq.eu)'
+        required: true
+        default: 'datadoghq.com'
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  synthetics:
+    name: Datadog Synthetic tests (manual, authenticated)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
-    - uses: actions/checkout@v4
+      - name: Check out repository (Node.js 24 compatible)
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
-    # Run Synthetic tests within your GitHub workflow.
-    # For additional configuration options visit the action within the marketplace: https://github.com/marketplace/actions/datadog-synthetics-ci
-    - name: Run Datadog Synthetic tests
-      uses: DataDog/synthetics-ci-github-action@87b505388a22005bb8013481e3f73a367b9a53eb # v1.4.0
-      with:
-        api_key: ${{secrets.DD_API_KEY}}
-        app_key: ${{secrets.DD_APP_KEY}}
-        test_search_query: 'tag:e2e-tests' #Modify this tag to suit your tagging strategy
+      - name: Check Datadog credentials are configured
+        shell: bash
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
+        run: |
+          if [[ -z "$DD_API_KEY" || -z "$DD_APP_KEY" ]]; then
+            echo "::error::Set DD_API_KEY and DD_APP_KEY in Settings > Secrets and variables > Actions. See docs/DATADOG-SYNTHETICS.md."
+            exit 1
+          fi
+          echo "Datadog secrets are present (values not displayed)."
 
+      - name: Run Datadog Synthetic tests (Node.js 24 compatible)
+        id: synthetics
+        uses: DataDog/synthetics-ci-github-action@7039855343386c30068a97ca381e68ea405e8539 # v4.1.1
+        with:
+          api-key: ${{ secrets.DD_API_KEY }}
+          app-key: ${{ secrets.DD_APP_KEY }}
+          datadog-site: ${{ inputs.datadog_site }}
+          test-search-query: ${{ inputs.test_search_query }}
+          fail-on-critical-errors: 'true'
+          fail-on-missing-tests: 'true'
 
+      # Never put keys, raw test results, URLs, or test payloads into artifacts.
+      - name: Write non-secret result counts for download
+        if: ${{ always() && (steps.synthetics.outcome == 'success' || steps.synthetics.outcome == 'failure') }}
+        shell: bash
+        env:
+          SYNTHETICS_OUTCOME: ${{ steps.synthetics.outcome }}
+          PASSED_COUNT: ${{ steps.synthetics.outputs.passed-count }}
+          FAILED_COUNT: ${{ steps.synthetics.outputs.failed-count }}
+          SKIPPED_COUNT: ${{ steps.synthetics.outputs.tests-skipped-count }}
+          NOT_FOUND_COUNT: ${{ steps.synthetics.outputs.tests-not-found-count }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdirSync, writeFileSync } from 'node:fs';
+          const toCount = value => /^\d+$/.test(value || '') ? Number(value) : null;
+          const report = {
+            schemaVersion: 1,
+            result: process.env.SYNTHETICS_OUTCOME === 'success' ? 'success' : 'failure',
+            counts: {
+              passed: toCount(process.env.PASSED_COUNT),
+              failed: toCount(process.env.FAILED_COUNT),
+              skipped: toCount(process.env.SKIPPED_COUNT),
+              notFound: toCount(process.env.NOT_FOUND_COUNT),
+            },
+            note: 'Numeric CI metadata only. Credentials and raw Synthetic results excluded.',
+          };
+          mkdirSync('.ci-reports', { recursive: true });
+          writeFileSync('.ci-reports/datadog-summary.json', JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+          NODE
+
+      - name: Upload downloadable, non-secret test summary
+        if: ${{ always() && (steps.synthetics.outcome == 'success' || steps.synthetics.outcome == 'failure') }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (Node.js 24)
+        with:
+          name: datadog-synthetics-summary
+          path: .ci-reports/datadog-summary.json
+          if-no-files-found: error
+          retention-days: 7
