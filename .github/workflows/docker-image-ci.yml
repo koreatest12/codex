@@ -21,8 +21,6 @@ concurrency:
 
 jobs:
   image:
-    # Fail closed: no runner allocation unless the owner explicitly opts in.
-    if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
@@ -33,7 +31,11 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Validate shell scripts
-        run: bash -n scripts/*.sh docker/*.sh
+        shell: bash
+        run: |
+          while IFS= read -r -d '' script; do
+            bash -n "$script"
+          done < <(find scripts docker -type f -name '*.sh' -print0)
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
