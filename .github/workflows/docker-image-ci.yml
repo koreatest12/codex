@@ -38,7 +38,7 @@ jobs:
           done < <(find scripts docker -type f -name '*.sh' -print0)
 
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build and cache image locally
         uses: docker/build-push-action@v6
