@@ -297,3 +297,15 @@ missing and conflicting secret configuration. The Linux container workflow
 also runs a redacted file-mode preflight.
 
 See [duplicate-secret troubleshooting](docs/DOCKER_OPERATIONS.md).
+
+## GitHub MCP integration
+
+The workspace includes the official remote GitHub MCP server configuration
+for VS Code in [`.vscode/mcp.json`](.vscode/mcp.json). Open the repository
+in VS Code and complete GitHub OAuth authentication before using tools.
+See [the MCP setup and security guide](docs/GITHUB-MCP.md).
+This is repository configuration, not an already-running remote installation.
+
+The `career-note` pnpm dependency security status and the unresolved
+`sprintf-js` upstream advisory are documented in
+[Dependency security maintenance](career-note/SECURITY-DEPENDENCIES.md).
