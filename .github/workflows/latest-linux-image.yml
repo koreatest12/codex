@@ -60,8 +60,6 @@ concurrency:
 
 jobs:
   build-and-run:
-    # Fail closed: no runner allocation unless the owner explicitly opts in.
-    if: ${{ vars.ENABLE_BILLABLE_CI == 'true' }}
     name: Pull Ubuntu, build server, and verify container
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -91,7 +89,9 @@ jobs:
 
       - name: Validate shell and Python syntax
         run: |
-          bash -n scripts/*.sh docker/entrypoint.sh
+          while IFS= read -r -d '' script; do
+            bash -n "$script"
+          done < <(find scripts docker -type f -name '*.sh' -print0)
           python3 -m py_compile app/server.py app/privacy.py app/data_manager.py scripts/rotate-data-encryption-key.py scripts/data-manager.py
 
       - name: Run Python privacy tests
