@@ -309,3 +309,12 @@ This is repository configuration, not an already-running remote installation.
 The `career-note` pnpm dependency security status and the unresolved
 `sprintf-js` upstream advisory are documented in
 [Dependency security maintenance](career-note/SECURITY-DEPENDENCIES.md).
+
+## Optional Datadog Synthetic tests
+
+The Datadog Synthetic test workflow is manual (not a required PR check) until an
+owner installs valid Datadog API/Application keys. Use
+`bash scripts/datadog-synthetics.sh install` to securely register GitHub Secrets,
+`status` to check secret names, `run` to trigger the test, and `download RUN_ID`
+to fetch **sanitized test counts only**. Never download or commit credential values.
+See [the setup and download guide](docs/DATADOG-SYNTHETICS.md).
