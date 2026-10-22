@@ -76,3 +76,25 @@ updates:
         update-types:
           - "minor"
           - "patch"
+
+  # pnpm workspace; Dependabot's npm ecosystem also handles pnpm manifests.
+  # Security alerts with no upstream patched version still need separate triage.
+  - package-ecosystem: "npm"
+    directory: "/career-note"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:40"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 10
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "deps(pnpm)"
+    groups:
+      frontend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
