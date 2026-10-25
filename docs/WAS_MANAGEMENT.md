@@ -25,8 +25,10 @@ sudo python3 scripts/was-manager.py deploy
 sudo python3 scripts/was-manager.py health
 ```
 
-- Windows PC라면 Docker Desktop + WSL2의 Linux 터미널을 사용하고
-  `install-docker` 명령은 실행하지 마세요.
+- Windows 10/11 개발 PC라면 Docker Desktop + WSL2의 Linux 터미널을 사용할 수 있지만,
+  **Windows Server는 Docker Desktop 공식 지원 대상이 아닙니다.**
+  Windows Server에서는 Hyper-V Ubuntu VM 안에서 Docker Engine을 설치해야 합니다.
+  전체 절차는 [Windows Server WAS 설치 안내](WINDOWS_SERVER_WAS.md)를 참고하세요.
 - 서버에 Docker와 Compose가 이미 작동한다면 설치 명령은 생략합니다.
 - `init`은 **신규 서버용**입니다. 기존 `.env`, `secrets/`, DB가 있는
   서버에서는 절대 재실행하지 마세요. 덮어쓰기를 거부합니다.
