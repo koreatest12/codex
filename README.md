@@ -306,9 +306,14 @@ in VS Code and complete GitHub OAuth authentication before using tools.
 See [the MCP setup and security guide](docs/GITHUB-MCP.md).
 This is repository configuration, not an already-running remote installation.
 
-The `career-note` pnpm dependency security status and the unresolved
-`sprintf-js` upstream advisory are documented in
+The `career-note` pnpm dependency security history, the October 2026
+withdrawal of the `sprintf-js` and `braces` advisories, and retained local
+defense-in-depth patches are documented in
 [Dependency security maintenance](career-note/SECURITY-DEPENDENCIES.md).
+
+The [Career Note CI workflow](.github/workflows/career-note-ci.yml) validates
+pinned pnpm installation, security regressions, storage-cost guards,
+TypeScript, lint, and the production build on changes to `career-note/`.
 
 ## Optional Datadog Synthetic tests
 
