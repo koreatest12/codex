@@ -56,3 +56,6 @@ data/
 
 # Downloaded CI metadata only (never check in generated artifacts)
 .ci-reports/
+
+# Local WAS database backups (confidential, never commit)
+backups/
