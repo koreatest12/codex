@@ -1,6 +1,6 @@
 "use client";
 import {useRef,useState} from 'react';
-import {Upload,FileText,CheckCircle} from 'lucide-react';
+import {Upload} from 'lucide-react';
 async function extract(file:File){
 const ext=file.name.split('.').pop()?.toLowerCase();
 if(ext==='txt'||ext==='md')return file.text();
