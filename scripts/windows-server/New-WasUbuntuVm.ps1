@@ -51,6 +51,9 @@ if ($PSCmdlet.ShouldProcess($VMName, 'Create new Generation 2 Ubuntu VM, virtual
         Path = $root
         SwitchName = $SwitchName
     }
+    # New-VM requires the VHD parent directory to exist. The directory is
+    # exclusively new because the preflight above rejects existing paths.
+    New-Item -ItemType Directory -Path $vmFolder -ErrorAction Stop | Out-Null
     New-VM @newArgs | Out-Null
     Set-VMProcessor -VMName $VMName -Count $CpuCount
     Add-VMDvdDrive -VMName $VMName -Path $iso.FullName
