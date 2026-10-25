@@ -323,3 +323,25 @@ owner installs valid Datadog API/Application keys. Use
 `status` to check secret names, `run` to trigger the test, and `download RUN_ID`
 to fetch **sanitized test counts only**. Never download or commit credential values.
 See [the setup and download guide](docs/DATADOG-SYNTHETICS.md).
+
+## WAS installation and unified host management
+
+This repository already implements a local Nginx → Gunicorn → Flask WAS with
+FIDO2/WebAuthn and a persistent Docker Compose volume. Use the **host-only**
+manager to set it up and control its lifecycle without exposing Docker remotely:
+
+```bash
+# On your Ubuntu host (Docker already installed, or run install-docker with sudo):
+python3 scripts/was-manager.py init --rp-id localhost --origin http://localhost:8080
+sudo python3 scripts/was-manager.py doctor
+sudo python3 scripts/was-manager.py deploy
+sudo python3 scripts/was-manager.py status
+sudo python3 scripts/was-manager.py backup
+```
+
+On an existing deployment, **do not rerun `init`** or regenerate encryption keys.
+The manager also supports `start`, `stop`, `restart`, `health`, `logs`, and
+`upgrade` (backup before redeploy). It does not create a cloud VM, make DNS/TLS
+changes, configure hardware keys without physical access, or deploy the separate
+Cloudflare `career-note` frontend. Its backup archives contain sensitive data
+and must not be committed; see [WAS operations and recovery](docs/WAS_MANAGEMENT.md).
