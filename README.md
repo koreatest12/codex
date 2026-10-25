@@ -345,3 +345,30 @@ The manager also supports `start`, `stop`, `restart`, `health`, `logs`, and
 changes, configure hardware keys without physical access, or deploy the separate
 Cloudflare `career-note` frontend. Its backup archives contain sensitive data
 and must not be committed; see [WAS operations and recovery](docs/WAS_MANAGEMENT.md).
+
+## Windows Server deployment (Hyper-V Ubuntu guest)
+
+Windows Server does **not** support Docker Desktop as a host installation.
+This repository's Linux Nginx/Gunicorn/Flask WAS should run inside a supported
+Ubuntu Server VM under Windows Server Hyper-V. Use the repository's read-only
+host preflight and opt-in VM creation scripts:
+
+```powershell
+.\scripts\windows-server\Test-WasHost.ps1
+# Review the Ubuntu ISO, trusted switch and VM storage path first:
+.\scripts\windows-server\New-WasUbuntuVm.ps1 -VMName CodexWAS -IsoPath "D:\ISO\ubuntu-server.iso" -SwitchName TrustedManagementSwitch -VmRoot "D:\HyperV" -WhatIf
+```
+
+After manually installing Ubuntu and verifying its SSH host key, the
+`Invoke-WasUbuntuGuest.ps1` wrapper can clone this GitHub repo to Ubuntu and
+invoke the existing `was-manager.py` installer, status, health, restart,
+logs, backup and upgrade controls through key-authenticated SSH.
+The wrapper does not expose Docker remotely, change Windows firewall policy,
+or provision unattended production credentials.
+
+**A merged PR and successful GitHub Actions run do not mean a persistent
+Windows Server VM has been installed.** Actual Windows host/Hyper-V access,
+Ubuntu installation, secret initialization and physical FIDO2 registration
+are still required. See the
+[Windows Server WAS guide](docs/WINDOWS_SERVER_WAS.md).
+
