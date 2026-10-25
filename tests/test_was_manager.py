@@ -63,6 +63,26 @@ class WasManagerTests(unittest.TestCase):
         with self.assertRaisesRegex(WAS.WasError, "refusing to overwrite"):
             WAS.WasManager(self.root).init("localhost", "http://localhost:8080")
 
+    def test_dangling_env_symlink_is_never_overwritten(self):
+        (self.root / ".env").symlink_to(self.root / "nonexistent-env-target")
+        with self.assertRaisesRegex(WAS.WasError, "refusing to overwrite"):
+            WAS.WasManager(self.root).init("localhost", "http://localhost:8080")
+
+    def test_symlinked_secret_directory_is_never_written(self):
+        (self.root / "secrets").rmdir()
+        (self.root / "secrets").symlink_to(self.root / "outside-secret-folder")
+        manager = WAS.WasManager(self.root)
+        with self.assertRaisesRegex(WAS.WasError, "refusing to overwrite"):
+            manager.init("localhost", "http://localhost:8080")
+        with self.assertRaisesRegex(WAS.WasError, "must not be a symlink"):
+            manager.secrets()
+
+    def test_existing_env_symlink_is_rejected(self):
+        (self.root / "real-env").write_text("WEBAUTHN_RP_ID=localhost")
+        (self.root / ".env").symlink_to(self.root / "real-env")
+        with self.assertRaisesRegex(WAS.WasError, "must not be a symlink"):
+            WAS.WasManager(self.root).secrets()
+
     def test_secret_checks_reject_symlinks(self):
         (self.root / ".env").write_text("WEBAUTHN_RP_ID=localhost")
         for name in WAS.SECRET_NAMES:
