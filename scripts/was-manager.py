@@ -64,6 +64,10 @@ class WasManager:
         self.run(["docker", "compose", "version"], capture=True)
 
     def secrets(self) -> None:
+        if (self.root / ".env").is_symlink():
+            raise WasError(".env must not be a symlink.")
+        if (self.root / "secrets").is_symlink():
+            raise WasError("secrets/ must not be a symlink.")
         if not (self.root / ".env").is_file():
             raise WasError("Missing .env; on a fresh host run: init")
         for name in SECRET_NAMES:
@@ -112,10 +116,11 @@ class WasManager:
         print("For a deployed instance: status / health. For a fresh install: deploy.")
 
     def init(self, rp_id: str, origin: str) -> None:
-        if (self.root / ".env").exists() or any(
-            (self.root / "secrets" / name).exists() for name in (*SECRET_NAMES, "admin_account")
-        ):
-            raise WasError("Existing configuration found; refusing to overwrite secrets.")
+        secret_dir = self.root / "secrets"
+        env_file = self.root / ".env"
+        paths = (env_file, *(secret_dir / name for name in (*SECRET_NAMES, "admin_account")))
+        if secret_dir.is_symlink() or any(p.exists() or p.is_symlink() for p in paths):
+            raise WasError("Existing configuration or symlink found; refusing to overwrite secrets.")
         self.run(["bash", "scripts/generate-security-env.sh", rp_id, origin])
         print("Local secrets created. Register a real FIDO2 key in the browser after deployment.")
 
