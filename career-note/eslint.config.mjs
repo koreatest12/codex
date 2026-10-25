@@ -12,7 +12,16 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // pdfjs-dist worker is copied verbatim during install, not authored source.
+    "public/pdf.worker.min.mjs",
   ]),
+  {
+    files: ["tests/**/*.cjs"],
+    rules: {
+      // Node test fixtures use CommonJS createRequire intentionally.
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
     rules: {
