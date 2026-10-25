@@ -8,7 +8,7 @@ The ineffective npm-only overrides field was removed; pnpm-workspace.yaml is
 the authoritative override configuration. The seven-day release-age policy
 and GitHub Dependency Review severity gate are unchanged.
 
-## Local mitigations awaiting upstream releases
+## Historical local mitigations (as of 2026-10-10)
 
 No published fix was available for these advisories on the audit date:
 
@@ -22,10 +22,48 @@ No published fix was available for these advisories on the audit date:
   application calls Mammoth's library API. Large formats now throw RangeError.
 
 These are project-maintained mitigations, not upstream security releases.
-The registry audit still reports these two package versions (one high, one
-moderate). Do not suppress or mark the advisories fixed solely because tests
-pass. Replace patches with upstream releases once available, rerun the tests,
-and remove each patch only after checking its replacement behavior.
+The registry audit on 2026-10-10 reported these two package versions (one high,
+one moderate). That historical output is not the current advisory state. Preserve
+the patches until they have been separately assessed for safe removal, even if
+their advisories are withdrawn. A passing test suite alone does not prove that
+removing guardrails is harmless.
+
+## Current advisory status — 2026-10-25
+
+**Both advisories discussed below have been withdrawn by the GitHub Advisory
+Database.** This supersedes the 2026-10-22 unresolved-advisory wording:
+
+- [GHSA-hp3w-g68c-fv3c](https://github.com/advisories/GHSA-hp3w-g68c-fv3c)
+  (`sprintf-js`) was **withdrawn on 2026-10-22**. GitHub explains that the
+  application is responsible for handling the relevant exceptions.
+- [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+  (`braces`) was **withdrawn on 2026-10-23** because the reported issue was
+  not considered practically exploitable.
+
+The Dependabot `security_update_not_possible` run from 2026-10-22 predates
+both withdrawal outcomes and **is a real historical failure, not confirmation
+of a currently unpatched active advisory**. Dependabot alert and update status
+must be freshly checked in GitHub; a historical run remains failed in Actions.
+Do not disable Dependabot, fabricate a patched upstream version, or dismiss
+any unrelated advisory. Project-maintained pnpm patches and security regression
+tests remain in place for defense in depth.
+
+To reassess, use the repository's Security > Dependabot alerts and
+Insights > Dependency graph, and review the next Dependabot run. On a developer
+machine with Node 24 and the project-pinned pnpm 11.25.0, verify:
+
+```bash
+cd career-note
+corepack enable
+corepack prepare pnpm@11.25.0 --activate
+pnpm install --frozen-lockfile
+pnpm run test:security
+pnpm audit
+```
+
+A fresh audit is the evidence for any remaining **active** advisories. Never
+treat a withdrawn historical notice as proof that other vulnerabilities are
+absent.
 
 ## Verification
 
@@ -51,7 +89,7 @@ RangeError; callers accepting untrusted format strings must still handle
 formatting errors. The application's Mammoth library usage does not accept
 user-supplied sprintf format strings.
 
-## Dependabot updater limitation — 2026-10-22
+## Dependabot updater limitation — historical run, 2026-10-22
 
 The October 21 Dependabot updater log reported
 `security_update_not_possible` for `sprintf-js`, with
@@ -78,5 +116,7 @@ When a fixed upstream release or safe replacement becomes available:
    and `pnpm build` in `career-note/`, plus `pnpm audit` to review remaining alerts.
 3. Check that GitHub's alert is actually resolved by the new dependency tree.
 
-The new weekly `npm` ecosystem entry in `.github/dependabot.yml` helps
-track future pnpm dependencies; it **does not** fix this unpatched CVE.
+The weekly `npm` ecosystem entry in `.github/dependabot.yml` tracks future
+pnpm dependencies. It did not fix this **historical** error; the advisory
+withdrawal is a separate event. Continue regular security audits and retain
+local patches until an explicitly tested change is made.

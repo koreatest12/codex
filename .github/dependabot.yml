@@ -78,7 +78,7 @@ updates:
           - "patch"
 
   # pnpm workspace; Dependabot's npm ecosystem also handles pnpm manifests.
-  # Security alerts with no upstream patched version still need separate triage.
+  # Triaging current advisories and historical withdrawn alerts is documented in\n  # career-note/SECURITY-DEPENDENCIES.md; keep security checks enabled.
   - package-ecosystem: "npm"
     directory: "/career-note"
     target-branch: "main"

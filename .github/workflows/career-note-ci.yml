@@ -1,0 +1,67 @@
+name: Career Note CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "career-note/**"
+      - ".github/workflows/career-note-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "career-note/**"
+      - ".github/workflows/career-note-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: pnpm security, typecheck, lint and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: career-note
+    env:
+      CI: "true"
+      WRANGLER_SEND_METRICS: "false"
+      CLOUDFLARE_CF_FETCH_ENABLED: "false"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Activate exact pnpm version from package.json
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+          test "$(pnpm --version)" = "11.25.0"
+
+      - name: Install locked pnpm dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
+
+      - name: Run dependency security regression tests
+        run: pnpm run test:security
+
+      - name: Run storage cost-guard tests
+        run: node --test tests/health-cost-guard.test.mjs
+
+      - name: Check TypeScript types
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint frontend
+        run: pnpm run lint
+
+      - name: Build frontend
+        run: pnpm run build
