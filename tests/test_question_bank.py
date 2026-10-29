@@ -104,6 +104,19 @@ class QuestionBankServerTests(unittest.TestCase):
         listed = practice.get_json()["items"][0]
         for hidden in ("correct_index", "model_answer", "explanation"):
             self.assertNotIn(hidden, listed)
+        # Editing an approved question must not silently publish unreviewed text,
+        # even if the same PATCH claims reviewed=true.
+        changed = self.send("PATCH", url, {
+            "expected_revision": 2, "status": "published", "reviewed": True,
+            "prompt": "다른 사용자의 문서에 대한 접근을 막는 서버 통제는 무엇인가요?"
+        }, token)
+        self.assertEqual(200, changed.status_code)
+        self.assertEqual("draft", changed.get_json()["status"])
+        self.assertEqual([], self.client.get("/api/questions/practice").get_json()["items"])
+        reapproved = self.send("PATCH", url, {
+            "expected_revision": 3, "status": "published", "reviewed": True
+        }, token)
+        self.assertEqual("published", reapproved.get_json()["status"])
         result = self.send("POST", "/api/questions/attempts", {
             "question_id": question["id"], "selected_choice": 2
         }, token)
