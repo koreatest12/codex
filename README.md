@@ -222,6 +222,8 @@ See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURI
 
 2027–2029 정보보안기사 학습 가이드(필기·실기 대응표, 최신 기술 개념, 자체 실습/해설): [docs/study/2027_STUDY_GUIDE.md](docs/study/2027_STUDY_GUIDE.md)
 
+정보보안기사 문제은행 관리 서버(필기 객관식·실기 서술형, 출제 승인, 채점·오답 관리): [docs/study/QUESTION_BANK_SERVER.md](docs/study/QUESTION_BANK_SERVER.md). 기존 WebAuthn 서버에 로그인 후 `/study/questions`에서 이용합니다.
+
 
 ## Dependabot and versioned data management
 
