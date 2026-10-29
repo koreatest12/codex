@@ -220,6 +220,8 @@ See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURI
 
 정보보안기사·개발 준비용 디지털시스템 정리: [docs/study/DIGITAL_SYSTEMS.md](docs/study/DIGITAL_SYSTEMS.md)
 
+2027–2029 정보보안기사 학습 가이드(필기·실기 대응표, 최신 기술 개념, 자체 실습/해설): [docs/study/2027_STUDY_GUIDE.md](docs/study/2027_STUDY_GUIDE.md)
+
 
 ## Dependabot and versioned data management
 
