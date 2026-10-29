@@ -1063,5 +1063,7 @@ init_db()
 DATA_MANAGER.init_schema()
 app.config["QUESTION_ALLOWED_ORIGIN"] = ORIGIN
 QUESTION_BANK = install_question_bank(
-    app, fully_authenticated, os.environ.get("QUESTION_BANK_DB_PATH", "/data/question-bank.db")
+    app, fully_authenticated, os.environ.get(
+        "QUESTION_BANK_DB_PATH", str(DATABASE_PATH.with_name("question-bank.db"))
+    )
 )
