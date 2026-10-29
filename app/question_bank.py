@@ -205,6 +205,12 @@ class QuestionBank:
         status = "archived" if archive else payload.get("status", previous["status"])
         if status not in STATUSES:
             raise QuestionError("invalid status")
+        # An edited approved item must pass human review again. This also
+        # prevents a combined edit+reviewed request from bypassing the gate.
+        if previous["status"] == "published" and status == "published" and any(
+            item[name] != previous[name] for name in FIELDS
+        ):
+            status = "draft"
         if status == "published" and previous["status"] != "published" and payload.get("reviewed") is not True:
             raise QuestionError("publishing requires reviewed=true and human review")
         with self.connect() as db:
