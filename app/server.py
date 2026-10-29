@@ -17,6 +17,7 @@ from privacy import PrivacyCipher, mask_value, validate_kind
 from admin_auth import AdminAccount
 from secret_config import require_secret
 from data_manager import DataManager, DataManagerError, NotFound, RevisionConflict
+from question_bank import install_question_bank
 from webauthn import (
     base64url_to_bytes,
     generate_authentication_options,
@@ -1060,3 +1061,9 @@ def logout():
 
 init_db()
 DATA_MANAGER.init_schema()
+app.config["QUESTION_ALLOWED_ORIGIN"] = ORIGIN
+QUESTION_BANK = install_question_bank(
+    app, fully_authenticated, os.environ.get(
+        "QUESTION_BANK_DB_PATH", str(DATABASE_PATH.with_name("question-bank.db"))
+    )
+)

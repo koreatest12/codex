@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>정보보안기사 2027 문제은행 관리</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='questions.css') }}">
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div class="eyebrow">SECURITY STUDY JOURNAL · 2027–2029</div>
+    <h1>정보보안기사 문제 관리 서버</h1>
+    <p>필기 5과목·실기 필답형 · 자체 제작 학습문제만 등록합니다. <strong>공식 기출문제 또는 공식 정답이 아닙니다.</strong></p>
+    <nav>
+      <a href="/">서버 관리로 돌아가기</a>
+      <a href="https://github.com/koreatest12/codex/blob/main/docs/study/2027_STUDY_GUIDE.md" rel="noopener noreferrer">학습자료</a>
+      <a href="https://www.cq.or.kr/qh_cusgm10_001.do" rel="noopener noreferrer">출제기준 확인</a>
+    </nav>
+  </header>
+
+  <p id="message" role="status" aria-live="polite" class="notice">보안 세션을 확인하고 있습니다.</p>
+
+  <section class="panel" aria-labelledby="bank-heading">
+    <div class="section-heading">
+      <h2 id="bank-heading">문제은행 관리</h2>
+      <button type="button" id="new">새 문제 작성</button>
+    </div>
+    <div class="filters">
+      <label>시험 유형
+        <select id="filter-part"><option value="">전체</option><option>필기</option><option>실기</option></select>
+      </label>
+      <label>과목
+        <select id="filter-subject"><option value="">전체</option></select>
+      </label>
+      <label>상태
+        <select id="filter-status">
+          <option value="">전체</option><option value="draft">초안</option>
+          <option value="published">검토 완료</option><option value="archived">보관</option>
+        </select>
+      </label>
+      <button id="load" type="button">목록 새로고침</button>
+    </div>
+    <p id="question-total" class="meta"></p>
+    <div id="question-list" class="question-list"></div>
+    <div class="pager">
+      <button id="prev" type="button">이전</button><span id="page-label"></span>
+      <button id="next" type="button">다음</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="editor-heading">
+    <h2 id="editor-heading">문제 편집</h2>
+    <p class="meta">새 문제는 항상 초안으로 저장됩니다. 검토 전 자동으로 출제되지 않습니다.</p>
+    <form id="question-form">
+      <div class="two">
+        <label>구분
+          <select id="exam-part" required><option value="필기">필기</option><option value="실기">실기</option></select>
+        </label>
+        <label>과목
+          <select id="subject" required></select>
+        </label>
+        <label>세부 주제
+          <input id="topic" maxlength="100" required placeholder="예: OWASP API1 객체 인가">
+        </label>
+        <label>난이도 (1~5)
+          <select id="difficulty"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        </label>
+      </div>
+      <label>문제 본문
+        <textarea id="prompt" rows="4" maxlength="3000" minlength="8" required></textarea>
+      </label>
+      <div id="multiple-choice-fields">
+        <label>선택지 (줄마다 하나씩 정확히 4개)
+          <textarea id="options" rows="6" maxlength="2500" placeholder="선택지 1&#10;선택지 2&#10;선택지 3&#10;선택지 4"></textarea>
+        </label>
+        <label>정답 선택지
+          <select id="correct-index"><option value="0">1번</option><option value="1">2번</option><option value="2">3번</option><option value="3">4번</option></select>
+        </label>
+      </div>
+      <label id="written-field" hidden>실기 모범답안 (자동 채점하지 않음)
+        <textarea id="model-answer" rows="4" maxlength="4000"></textarea>
+      </label>
+      <label>해설
+        <textarea id="explanation" rows="4" maxlength="5000" required></textarea>
+      </label>
+      <label>참고 출처 URL (선택, HTTPS)
+        <input id="source-url" maxlength="500" type="url" placeholder="https://...">
+      </label>
+      <p id="edit-meta" class="meta">새 문제 작성 중</p>
+      <div class="actions">
+        <button id="save" type="submit">초안 저장 / 수정</button>
+        <button id="publish" type="button" class="positive" disabled>검토 후 출제 승인</button>
+        <button id="archive" type="button" class="secondary" disabled>문제 보관</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="practice-heading">
+    <h2 id="practice-heading">모의 학습 · 오답 관리</h2>
+    <p class="meta">검토 완료된 문제만 출제합니다. 실기는 본인이 작성한 답과 모범답안을 비교한 후 자체 평가합니다.</p>
+    <div class="filters">
+      <label>구분
+        <select id="practice-part"><option value="">전체</option><option>필기</option><option>실기</option></select>
+      </label>
+      <label>과목
+        <select id="practice-subject"><option value="">전체</option></select>
+      </label>
+      <label>문항 수
+        <select id="practice-limit"><option>5</option><option selected>10</option><option>20</option></select>
+      </label>
+      <button type="button" id="start-practice">문제 풀기</button>
+    </div>
+    <div id="practice-box" class="practice-box" aria-live="polite"></div>
+    <div class="section-heading">
+      <h3>풀이 기록</h3><button type="button" id="refresh-attempts">기록 새로고침</button>
+    </div>
+    <p id="attempt-stats" class="meta"></p>
+    <div id="attempt-history" class="history"></div>
+  </section>
+  <footer>개인 학습용 서버 · 관리자 인증 필수 · 삭제 대신 보관 · 저장 자료는 /data 볼륨에 유지</footer>
+</main>
+<script src="{{ url_for('static', filename='questions.js') }}"></script>
+</body>
+</html>
