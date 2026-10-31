@@ -222,6 +222,10 @@ See [docs/biff-2026/PRIVATE_DATA.md](docs/biff-2026/PRIVATE_DATA.md) and [SECURI
 
 2027–2029 정보보안기사 학습 가이드(필기·실기 대응표, 최신 기술 개념, 자체 실습/해설): [docs/study/2027_STUDY_GUIDE.md](docs/study/2027_STUDY_GUIDE.md)
 
+2027 정보보안기사 **120문항 자체제작 학습 데이터**(필기 100 + 실기 20)와 **초안 전용 대량 가져오기**: [docs/study/2027_BULK_QUESTION_IMPORT.md](docs/study/2027_BULK_QUESTION_IMPORT.md), [심화학습 확장](docs/study/2027_SYSTEMATIC_EXTENSIONS.md). 검토 전에는 모의시험에 자동 게시하지 않습니다.
+
+Windows Server **읽기 전용 업그레이드 준비 점검**: [docs/WINDOWS_SERVER_UPGRADE_READINESS.md](docs/WINDOWS_SERVER_UPGRADE_READINESS.md). 실제 Windows OS 업그레이드·재부팅은 수행하지 않습니다.
+
 
 ## Dependabot and versioned data management
 
