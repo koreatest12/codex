@@ -29,6 +29,9 @@ data/*
 !data/biff-2026/
 data/biff-2026/*
 !data/biff-2026/seed.json
+!data/study/
+data/study/*
+!data/study/security-exam-2027.json
 
 # Build outputs, caches and workstation folders
 **/__pycache__/
