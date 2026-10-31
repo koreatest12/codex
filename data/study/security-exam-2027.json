@@ -1,0 +1,2188 @@
+{
+  "schema_version": 1,
+  "exam_coverage": "2027-01-01 to 2029-12-31",
+  "official_exam_questions": false,
+  "question_provenance": "self-authored, human review required",
+  "items": [
+    {
+      "key": "SEC27-MC-1-01",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "최소권한 원칙",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n업무에 필요한 권한만 필요한 기간 동안 부여하는 접근통제 원칙",
+      "options": [
+        "최소권한 원칙",
+        "RBAC",
+        "보안 패치 관리",
+        "ScoutSuite"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '최소권한 원칙'이다. 계정·서비스·클라우드 IAM의 과도한 권한을 줄여 공격 영향 범위를 제한한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-1-02",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "DAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n자원 소유자가 자원 접근 권한을 결정하는 임의적 접근통제",
+      "options": [
+        "ABAC",
+        "DAC",
+        "시스템 감사 로그",
+        "클라우드 공동책임모델"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'DAC'이다. 소유자의 재량이 핵심이며 중앙 강제 정책인 MAC과 구분한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-1-03",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "MAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n시스템이 정의한 보안등급과 정책으로 접근을 강제하는 접근통제",
+      "options": [
+        "ASLR",
+        "프로세스 격리",
+        "MAC",
+        "비밀정보 관리"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'MAC'이다. 자료/사용자 보안등급에 따라 관리자가 통제하며 소유자가 임의로 해제하지 못한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-1-04",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "RBAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n사용자의 역할에 연결된 권한을 할당하는 접근통제",
+      "options": [
+        "DEP/NX",
+        "가상머신",
+        "파일 무결성 모니터링",
+        "RBAC"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'RBAC'이다. 직무 변경 시 역할 멤버십을 재검토하며 직무분리를 지원한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-1-05",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "ABAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n주체·객체·환경 속성을 정책으로 평가하는 접근통제",
+      "options": [
+        "ABAC",
+        "보안 패치 관리",
+        "컨테이너",
+        "백업과 복구"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'ABAC'이다. 시간·기기 상태·문서 분류 등 조건을 결합할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-1-06",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "ASLR",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n프로세스의 메모리 주소 배치를 무작위화하는 완화 기법",
+      "options": [
+        "시스템 감사 로그",
+        "ASLR",
+        "Trivy",
+        "EDR"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'ASLR'이다. 취약점 자체를 고치는 것이 아니라 주소 예측 공격을 어렵게 한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-1-07",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "DEP/NX",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n데이터로 취급되는 메모리 영역의 코드 실행을 제한하는 완화 기법",
+      "options": [
+        "프로세스 격리",
+        "ScoutSuite",
+        "DEP/NX",
+        "클라우드 인스턴스 메타데이터"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'DEP/NX'이다. 스택/힙 실행 차단은 메모리 손상 취약점 제거와 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-1-08",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "보안 패치 관리",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n취약성·노출도·업무 영향을 평가해 소프트웨어 수정 사항을 적용하는 과정",
+      "options": [
+        "가상머신",
+        "클라우드 공동책임모델",
+        "최소권한 원칙",
+        "보안 패치 관리"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '보안 패치 관리'이다. 패치 전 영향 평가와 백업, 적용 후 검증을 병행한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-1-09",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "시스템 감사 로그",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n사용자·시스템·관리 작업 등 사건을 추적할 수 있도록 기록한 데이터",
+      "options": [
+        "시스템 감사 로그",
+        "컨테이너",
+        "비밀정보 관리",
+        "DAC"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '시스템 감사 로그'이다. 정확한 시각·접근권한·무결성·보존 정책이 증거 품질을 결정한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-1-10",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "프로세스 격리",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n실행 단위 사이에 자원과 주소 공간 접근을 제한하는 운영체제 보호",
+      "options": [
+        "Trivy",
+        "프로세스 격리",
+        "파일 무결성 모니터링",
+        "MAC"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '프로세스 격리'이다. 프로세스는 일반적으로 주소 공간을 분리하며 스레드는 같은 프로세스 자원을 공유한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-1-11",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "가상머신",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n하이퍼바이저 위에서 별도 게스트 운영체제를 실행하는 가상화 환경",
+      "options": [
+        "ScoutSuite",
+        "백업과 복구",
+        "가상머신",
+        "RBAC"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '가상머신'이다. 호스트·하이퍼바이저·게스트의 패치와 보안 책임을 나누어야 한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-1-12",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "컨테이너",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n호스트 커널을 공유하며 네임스페이스·자원제한 등으로 격리되는 실행 단위",
+      "options": [
+        "클라우드 공동책임모델",
+        "EDR",
+        "ABAC",
+        "컨테이너"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '컨테이너'이다. 특권 컨테이너와 과도한 마운트는 격리 위험을 키울 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-1-13",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "Trivy",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n컨테이너 이미지·파일시스템·IaC 등의 취약점 및 설정 오류를 평가하는 도구",
+      "options": [
+        "Trivy",
+        "비밀정보 관리",
+        "클라우드 인스턴스 메타데이터",
+        "ASLR"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'Trivy'이다. 스캔 결과는 위험 신호이며 런타임 악용 여부의 자동 증명은 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://trivy.dev/docs/latest/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-1-14",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "ScoutSuite",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n클라우드 계정 구성 상태를 읽고 위험 설정을 보고하는 감사 도구",
+      "options": [
+        "파일 무결성 모니터링",
+        "ScoutSuite",
+        "최소권한 원칙",
+        "DEP/NX"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'ScoutSuite'이다. 권한 있는 실습 계정에서 최소 읽기 권한으로 점검하고 보고서를 비공개로 관리한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://github.com/nccgroup/ScoutSuite",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-1-15",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "클라우드 공동책임모델",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n클라우드 제공자와 이용자가 서비스 유형별 보안 책임을 나누는 모델",
+      "options": [
+        "백업과 복구",
+        "DAC",
+        "클라우드 공동책임모델",
+        "보안 패치 관리"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '클라우드 공동책임모델'이다. IaaS/PaaS/SaaS의 관리 범위 차이를 공급자 계약 및 서비스별로 확인한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-1-16",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "비밀정보 관리",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nAPI 키·토큰·비밀번호를 코드에서 분리하고 저장·배포·회전하는 통제",
+      "options": [
+        "EDR",
+        "MAC",
+        "시스템 감사 로그",
+        "비밀정보 관리"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '비밀정보 관리'이다. Git에 비밀을 커밋하지 않으며 최소권한·회수 절차를 둔다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-1-17",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "파일 무결성 모니터링",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n중요한 파일과 설정의 무단 변경 징후를 비교·감시하는 방법",
+      "options": [
+        "파일 무결성 모니터링",
+        "클라우드 인스턴스 메타데이터",
+        "RBAC",
+        "프로세스 격리"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '파일 무결성 모니터링'이다. 기준 해시의 신뢰성과 정상 변경 승인 이력을 함께 검사한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-1-18",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "백업과 복구",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n장애·변조·삭제에 대비해 사본을 보관하고 복원 가능성을 검증하는 통제",
+      "options": [
+        "최소권한 원칙",
+        "백업과 복구",
+        "ABAC",
+        "가상머신"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '백업과 복구'이다. 백업의 존재보다 복구 테스트와 RPO·RTO 목표 충족이 중요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-1-19",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "EDR",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n단말 활동을 수집·분석해 위협 탐지·조사·대응을 지원하는 솔루션",
+      "options": [
+        "DAC",
+        "ASLR",
+        "EDR",
+        "컨테이너"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'EDR'이다. EPP 예방 기능과 겹칠 수 있으나 행위 추적·사고 대응에 초점을 둔다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-1-20",
+      "exam_part": "필기",
+      "subject": "시스템 보안",
+      "kind": "multiple_choice",
+      "topic": "클라우드 인스턴스 메타데이터",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n가상 서버의 식별자·구성 등 내부 정보를 제공하는 메타데이터 서비스",
+      "options": [
+        "MAC",
+        "DEP/NX",
+        "Trivy",
+        "클라우드 인스턴스 메타데이터"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '클라우드 인스턴스 메타데이터'이다. SSRF 및 자격증명 노출을 막도록 접근 경계와 IAM 권한을 점검한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-2-01",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "OSI 계층 모델",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n통신 기능을 7개 계층으로 구분한 참조 모델",
+      "options": [
+        "CIDR",
+        "OSI 계층 모델",
+        "TLS",
+        "SDN"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'OSI 계층 모델'이다. 계층별 책임과 장비가 다르므로 실제 프로토콜 TCP/IP와 구분한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-2-02",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "TCP 3-way handshake",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nSYN·SYN/ACK·ACK 교환으로 TCP 연결을 설정하는 절차",
+      "options": [
+        "IPv6",
+        "IPsec",
+        "TCP 3-way handshake",
+        "SASE"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'TCP 3-way handshake'이다. 연결 설정은 애플리케이션 사용자 인증을 보장하지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-2-03",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "UDP",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n연결 설정 없이 데이터그램을 전달하는 전송계층 프로토콜",
+      "options": [
+        "ARP",
+        "방화벽",
+        "ZTNA",
+        "UDP"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'UDP'이다. 전송 자체의 순서·재전송은 보장하지 않지만 응용 계층이 구현할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-2-04",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "CIDR",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nIP 주소와 접두 길이를 사용해 주소 블록을 표현하는 방식",
+      "options": [
+        "CIDR",
+        "DNS",
+        "IDS",
+        "XDR"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'CIDR'이다. IPv4 /26은 64개 주소를 의미하며 일반 서브넷에서 호스트 주소는 62개다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-2-05",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "IPv6",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n128비트 주소를 사용하는 인터넷 프로토콜 버전",
+      "options": [
+        "TLS",
+        "IPv6",
+        "IPS",
+        "NAC"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'IPv6'이다. NDP·ICMPv6 등 IPv4와 다른 요소의 보안을 함께 고려한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-2-06",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "ARP",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n같은 로컬 링크에서 IPv4 주소에 대응하는 MAC 주소를 찾는 프로토콜",
+      "options": [
+        "IPsec",
+        "VLAN",
+        "ARP",
+        "패킷 캡처"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'ARP'이다. 위조 응답을 통한 ARP 스푸핑을 점검하고 네트워크 분리를 고려한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-2-07",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "DNS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n도메인 이름과 리소스 레코드의 조회를 처리하는 분산 이름 시스템",
+      "options": [
+        "방화벽",
+        "SDN",
+        "VPC 보안 그룹",
+        "DNS"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'DNS'이다. DNSSEC은 응답 출처 무결성을 돕지만 전체 트래픽 암호화와 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-2-08",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "TLS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n전송 구간에서 암호화·무결성·서버 인증 등을 제공하는 프로토콜",
+      "options": [
+        "TLS",
+        "IDS",
+        "SASE",
+        "OSI 계층 모델"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'TLS'이다. 인증서 검증·안전한 버전·암호 구성이 중요하며 서버의 객체 인가를 대신하지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-2-09",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "IPsec",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nIP 계층에서 트래픽의 인증·무결성·암호화 등을 제공하는 프로토콜 모음",
+      "options": [
+        "IPS",
+        "IPsec",
+        "ZTNA",
+        "TCP 3-way handshake"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'IPsec'이다. ESP·AH 기능과 터널·전송 모드를 구별해 사용한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-2-10",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "방화벽",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n정책에 따라 허용·거부할 트래픽을 평가하는 네트워크 통제",
+      "options": [
+        "VLAN",
+        "XDR",
+        "방화벽",
+        "UDP"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '방화벽'이다. 상태 저장 여부와 규칙 순서·대상·로그를 함께 확인한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-2-11",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "IDS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n침입 징후를 탐지하고 경보를 제공하는 시스템",
+      "options": [
+        "SDN",
+        "NAC",
+        "CIDR",
+        "IDS"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'IDS'이다. 탐지는 차단과 같지 않으며 오탐·미탐 가능성이 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-2-12",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "IPS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n지정된 경로의 위협 트래픽을 탐지하고 차단할 수 있는 시스템",
+      "options": [
+        "IPS",
+        "SASE",
+        "패킷 캡처",
+        "IPv6"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'IPS'이다. 차단 규칙은 정상 서비스 영향과 오탐 위험을 함께 평가한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-2-13",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "VLAN",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n하나의 스위칭 환경에서 논리적 2계층 브로드캐스트 도메인을 분리하는 기술",
+      "options": [
+        "ZTNA",
+        "VLAN",
+        "VPC 보안 그룹",
+        "ARP"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'VLAN'이다. VLAN 간 라우팅이나 ACL 구성에 따라 통신할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-2-14",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "SDN",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n제어 기능과 패킷 전달 기능을 분리해 네트워크를 프로그래밍하는 접근",
+      "options": [
+        "XDR",
+        "OSI 계층 모델",
+        "SDN",
+        "DNS"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'SDN'이다. 중앙 정책의 관리 장점과 컨트롤러 보호 필요성을 함께 설명한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-2-15",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "SASE",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n네트워크 연결과 클라우드 보안 기능을 서비스 형태로 통합하는 아키텍처",
+      "options": [
+        "NAC",
+        "TCP 3-way handshake",
+        "TLS",
+        "SASE"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'SASE'이다. SD-WAN·SWG·CASB·ZTNA 등의 구성은 제품별로 달라진다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/207/final",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-2-16",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "ZTNA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n신원·기기·상황과 자원별 정책에 따라 접근을 판단하는 제로 트러스트 구현",
+      "options": [
+        "ZTNA",
+        "패킷 캡처",
+        "UDP",
+        "IPsec"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'ZTNA'이다. 사내 네트워크라는 위치만으로 권한을 자동 부여하지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/207/final",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-2-17",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "XDR",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n여러 보안 도메인의 신호를 연관 분석하고 대응을 지원하는 접근",
+      "options": [
+        "VPC 보안 그룹",
+        "XDR",
+        "CIDR",
+        "방화벽"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'XDR'이다. 엔드포인트 중심 EDR과 데이터 범위가 다를 수 있으며 SIEM과 중첩된다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-2-18",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "NAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n기기 상태와 사용자 정책에 따라 네트워크 접속을 허용·제한하는 통제",
+      "options": [
+        "OSI 계층 모델",
+        "IPv6",
+        "NAC",
+        "IDS"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'NAC'이다. 연결 당시뿐 아니라 이후 기기 상태 변화도 관리할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-2-19",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "패킷 캡처",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n네트워크 프레임·패킷을 수집하여 프로토콜과 트래픽 흐름을 분석하는 기법",
+      "options": [
+        "TCP 3-way handshake",
+        "ARP",
+        "IPS",
+        "패킷 캡처"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '패킷 캡처'이다. 헤더 정보와 암호화된 페이로드의 가시성 범위를 구별한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/41/r1/final",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-2-20",
+      "exam_part": "필기",
+      "subject": "네트워크 보안",
+      "kind": "multiple_choice",
+      "topic": "VPC 보안 그룹",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n클라우드 자원/인터페이스에 적용하는 상태 저장 네트워크 허용 정책",
+      "options": [
+        "VPC 보안 그룹",
+        "UDP",
+        "DNS",
+        "VLAN"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'VPC 보안 그룹'이다. AWS 예시에서 NACL의 상태 비저장 특성과 차이를 설명해야 한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-3-01",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "SQL 인젝션",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n입력값이 SQL 구문으로 결합되어 의도하지 않은 쿼리가 실행될 위험",
+      "options": [
+        "SSRF",
+        "API 요청 제한",
+        "SQL 인젝션",
+        "업로드 파일 검증"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'SQL 인젝션'이다. 매개변수화 쿼리·최소권한·입력 검증을 함께 적용한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-3-02",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "XSS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n웹 페이지에 공격자 제어 스크립트가 삽입되어 이용자 브라우저에서 실행되는 취약점",
+      "options": [
+        "BOLA",
+        "OAuth 2.0",
+        "SAST",
+        "XSS"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'XSS'이다. 출력 위치별 인코딩·검증과 CSP 등 방어 심층화를 사용한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-3-03",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "CSRF",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n인증된 사용자의 브라우저를 통해 원하지 않는 상태 변경 요청이 발생하는 공격",
+      "options": [
+        "CSRF",
+        "BOPLA",
+        "OpenID Connect",
+        "DAST"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'CSRF'이다. CSRF 토큰·SameSite 쿠키·출처 검증 등을 조합한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-3-04",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "SSRF",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n서버가 공격자 제어 대상에 네트워크 요청을 보내도록 악용되는 취약점",
+      "options": [
+        "BFLA",
+        "SSRF",
+        "JWT 검증",
+        "SCA"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'SSRF'이다. 허용 목적지·프로토콜 제한과 메타데이터 네트워크 차단을 고려한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-3-05",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "BOLA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n사용자가 접근권한 없는 다른 객체를 API로 조회·수정할 수 있는 인가 실패",
+      "options": [
+        "API 요청 제한",
+        "CORS",
+        "BOLA",
+        "DNS 캐시 포이즈닝"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'BOLA'이다. 매 요청에서 대상 객체와 사용자 사이의 권한을 서버에서 검증한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-3-06",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "BOPLA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nAPI 객체의 일부 속성에 대한 읽기·쓰기 권한 검사가 누락된 문제",
+      "options": [
+        "OAuth 2.0",
+        "보안 헤더",
+        "메일 인증 SPF/DKIM/DMARC",
+        "BOPLA"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'BOPLA'이다. 허용된 응답·입력 속성 목록을 분리해 적용한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-3-07",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "BFLA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n권한 없는 사용자가 관리자 같은 제한 기능을 호출할 수 있는 인가 실패",
+      "options": [
+        "BFLA",
+        "OpenID Connect",
+        "업로드 파일 검증",
+        "입력 스키마 검증"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'BFLA'이다. 엔드포인트/기능별 역할과 정책을 서버에서 검사한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-3-08",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "API 요청 제한",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n과도한 호출·요청 크기·동시성으로 자원을 고갈시키는 남용을 제한하는 통제",
+      "options": [
+        "JWT 검증",
+        "API 요청 제한",
+        "SAST",
+        "SQL 인젝션"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'API 요청 제한'이다. 단순 분당 횟수 외에 처리 시간과 자원 비용을 평가한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-3-09",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "OAuth 2.0",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n자원 접근 권한을 위임하기 위한 프레임워크",
+      "options": [
+        "CORS",
+        "DAST",
+        "OAuth 2.0",
+        "XSS"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'OAuth 2.0'이다. 인증과 혼동하지 않고 OIDC 및 토큰 대상·범위 검증을 이해한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-3-10",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "OpenID Connect",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nOAuth 2.0 기반에 인증·사용자 ID 정보를 결합한 프로토콜",
+      "options": [
+        "보안 헤더",
+        "SCA",
+        "CSRF",
+        "OpenID Connect"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'OpenID Connect'이다. ID Token과 Access Token의 목적이 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-3-11",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "JWT 검증",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n서명된 토큰의 알고리즘·발급자·대상·만료 등을 검사하는 절차",
+      "options": [
+        "JWT 검증",
+        "업로드 파일 검증",
+        "DNS 캐시 포이즈닝",
+        "SSRF"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'JWT 검증'이다. 단순 디코딩은 서명 또는 권한 유효성 검증이 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-3-12",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "CORS",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n브라우저에서 다른 출처 자원 접근을 제한·허용하는 정책 메커니즘",
+      "options": [
+        "SAST",
+        "CORS",
+        "메일 인증 SPF/DKIM/DMARC",
+        "BOLA"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'CORS'이다. CORS 허용은 사용자 인증·자원별 서버 인가를 대신하지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-3-13",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "보안 헤더",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n웹 브라우저의 콘텐츠 처리·프레이밍·전송 정책을 제한하는 HTTP 응답 헤더",
+      "options": [
+        "DAST",
+        "입력 스키마 검증",
+        "보안 헤더",
+        "BOPLA"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '보안 헤더'이다. CSP·HSTS 등의 목적과 전제 조건을 구별한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-3-14",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "업로드 파일 검증",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n서버가 업로드된 파일의 유형·크기·내용·저장 위치를 검증하는 과정",
+      "options": [
+        "SCA",
+        "SQL 인젝션",
+        "BFLA",
+        "업로드 파일 검증"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '업로드 파일 검증'이다. 확장자만 검사하지 않으며 비실행 경로에 저장하고 권한을 제한한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-3-15",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "SAST",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n코드를 실행하지 않고 소스 또는 바이너리를 분석하는 정적 보안 검사",
+      "options": [
+        "SAST",
+        "DNS 캐시 포이즈닝",
+        "XSS",
+        "API 요청 제한"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'SAST'이다. 논리상 보안 결함의 발견에는 별도 리뷰·동적 검증이 필요할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-3-16",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "DAST",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n실행 중인 애플리케이션의 외부 동작을 점검하는 동적 보안 검사",
+      "options": [
+        "메일 인증 SPF/DKIM/DMARC",
+        "DAST",
+        "CSRF",
+        "OAuth 2.0"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'DAST'이다. 인증된 테스트 범위와 정상 서비스 영향 통제가 필요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-3-17",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "SCA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n소프트웨어 의존성의 알려진 취약점·라이선스·구성요소를 조사하는 분석",
+      "options": [
+        "입력 스키마 검증",
+        "SSRF",
+        "SCA",
+        "OpenID Connect"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'SCA'이다. 알려진 CVE 탐지와 애플리케이션 자체 설계 결함 탐지는 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-3-18",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "DNS 캐시 포이즈닝",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n이름 해석 결과를 부정확한 IP 주소로 유도하도록 캐시를 오염시키는 공격",
+      "options": [
+        "SQL 인젝션",
+        "BOLA",
+        "JWT 검증",
+        "DNS 캐시 포이즈닝"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'DNS 캐시 포이즈닝'이다. DNSSEC 검증·캐시 정책·리졸버 구성 등 방어를 고려한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-3-19",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "메일 인증 SPF/DKIM/DMARC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n송신 도메인 정책·메시지 서명·도메인 정렬을 조합하는 메일 사칭 방지 메커니즘",
+      "options": [
+        "메일 인증 SPF/DKIM/DMARC",
+        "XSS",
+        "BOPLA",
+        "CORS"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '메일 인증 SPF/DKIM/DMARC'이다. 세 기술은 상호 보완적이며 콘텐츠 전체의 안전성 보장은 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-3-20",
+      "exam_part": "필기",
+      "subject": "어플리케이션 보안",
+      "kind": "multiple_choice",
+      "topic": "입력 스키마 검증",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nAPI 입력의 타입·길이·구조·허용값을 계약에 따라 검사하는 통제",
+      "options": [
+        "CSRF",
+        "입력 스키마 검증",
+        "BFLA",
+        "보안 헤더"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '입력 스키마 검증'이다. 정상 형식만 보장하므로 객체별 인가는 별도로 검사한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-4-01",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "대칭키 암호",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n암호화와 복호화에 관련된 비밀 키를 공유해 사용하는 암호 방식",
+      "options": [
+        "HMAC",
+        "OCSP",
+        "SLH-DSA",
+        "대칭키 암호"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '대칭키 암호'이다. 키의 안전한 공유·저장과 nonce 사용 규칙이 중요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-4-02",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "공개키 암호",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n수학적으로 연관된 공개키·개인키를 사용하는 암호 체계",
+      "options": [
+        "공개키 암호",
+        "전자서명",
+        "AES-GCM",
+        "동형암호"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '공개키 암호'이다. 암호화·서명·키 합의의 용도와 제공 성질을 구분한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-4-03",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "해시 함수",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n임의 길이 메시지를 고정 길이 요약값으로 매핑하는 함수",
+      "options": [
+        "PKI",
+        "해시 함수",
+        "KDF",
+        "경량암호"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '해시 함수'이다. 충돌 저항성·역상 저항성과 비밀번호 해싱 요구를 구분한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-4-04",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "HMAC",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n비밀키와 해시 함수를 결합해 메시지 무결성과 출처를 확인하는 MAC",
+      "options": [
+        "CRL",
+        "CSPRNG",
+        "HMAC",
+        "Ascon-AEAD128"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'HMAC'이다. 암호화가 아니며 수신자와 공유하는 비밀키 관리가 필요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-4-05",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "전자서명",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n개인키로 서명을 생성하고 공개키로 메시지 진정성을 검증하는 기술",
+      "options": [
+        "OCSP",
+        "ML-KEM",
+        "다중요소 인증",
+        "전자서명"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '전자서명'이다. 서명만으로 메시지가 암호화되는 것은 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-4-06",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "PKI",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n인증서·발급기관·폐기·신뢰체인을 관리하는 공개키 기반 구조",
+      "options": [
+        "PKI",
+        "AES-GCM",
+        "ML-DSA",
+        "FIDO2/WebAuthn"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'PKI'이다. 신뢰앵커와 경로·이름·유효기간 검증이 중요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-4-07",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "CRL",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n인증기관이 제공하는 폐지된 인증서 목록",
+      "options": [
+        "KDF",
+        "CRL",
+        "SLH-DSA",
+        "딥페이크 사칭"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'CRL'이다. 발급기관 정보·갱신 주기·검증 정책을 고려한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-4-08",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "OCSP",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n인증서 폐지 상태를 온라인으로 질의하는 프로토콜",
+      "options": [
+        "CSPRNG",
+        "동형암호",
+        "OCSP",
+        "대칭키 암호"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'OCSP'이다. 실패 시 처리정책 및 응답 신뢰성을 검토한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-4-09",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "AES-GCM",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n대칭키 암호와 인증 태그를 결합한 인증 암호화 방식",
+      "options": [
+        "ML-KEM",
+        "경량암호",
+        "공개키 암호",
+        "AES-GCM"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'AES-GCM'이다. 동일 키에서 nonce 재사용을 방지해야 한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-4-10",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "KDF",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n키 재료에서 필요한 목적과 길이의 키를 안전하게 유도하는 함수",
+      "options": [
+        "KDF",
+        "ML-DSA",
+        "Ascon-AEAD128",
+        "해시 함수"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'KDF'이다. 비밀번호 기반 키 유도와 고엔트로피 키 확장을 구별한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-4-11",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "CSPRNG",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n암호용 비밀값을 예측하기 어렵게 생성하는 난수발생기",
+      "options": [
+        "SLH-DSA",
+        "CSPRNG",
+        "다중요소 인증",
+        "HMAC"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'CSPRNG'이다. 단순 일반 의사난수와 공격자 예측 저항성이 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-4-12",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "ML-KEM",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nNIST FIPS 203에 표준화된 양자내성 키 캡슐화 메커니즘",
+      "options": [
+        "동형암호",
+        "FIDO2/WebAuthn",
+        "ML-KEM",
+        "전자서명"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'ML-KEM'이다. 공유 비밀 설정을 위한 것이며 전자서명 알고리즘이 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/fips/203/final",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-4-13",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "ML-DSA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nNIST FIPS 204에 표준화된 격자 기반 양자내성 전자서명",
+      "options": [
+        "경량암호",
+        "딥페이크 사칭",
+        "PKI",
+        "ML-DSA"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'ML-DSA'이다. 키 캡슐화가 아니라 서명 생성·검증 목적이다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/fips/204/final",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-4-14",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "SLH-DSA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nNIST FIPS 205에 표준화된 상태 비저장 해시 기반 서명",
+      "options": [
+        "SLH-DSA",
+        "Ascon-AEAD128",
+        "대칭키 암호",
+        "CRL"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'SLH-DSA'이다. ML-DSA와 수학적 기반 및 성능 특성이 다르다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/fips/205/final",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-4-15",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "동형암호",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n암호문에 연산을 수행해 복호화 후 대응하는 평문 연산 결과를 얻는 암호",
+      "options": [
+        "다중요소 인증",
+        "동형암호",
+        "공개키 암호",
+        "OCSP"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '동형암호'이다. 지원 연산·계산 비용과 기능 제한을 함께 평가한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-4-16",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "경량암호",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n메모리·전력·회로 자원이 제한된 환경에 효율을 고려한 암호",
+      "options": [
+        "FIDO2/WebAuthn",
+        "해시 함수",
+        "경량암호",
+        "AES-GCM"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '경량암호'이다. 짧고 취약한 암호의 동의어가 아니며 표준과 안전성을 검토한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-4-17",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "Ascon-AEAD128",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\nNIST 경량암호 표준 SP 800-232의 인증 암호화 알고리즘",
+      "options": [
+        "딥페이크 사칭",
+        "HMAC",
+        "KDF",
+        "Ascon-AEAD128"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'Ascon-AEAD128'이다. 인증 암호화 목적과 키·nonce 관리 요구를 함께 설명한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/pubs/sp/800/232/final",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-4-18",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "다중요소 인증",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n서로 독립적인 인증 요소 유형을 조합해 인증하는 방식",
+      "options": [
+        "다중요소 인증",
+        "대칭키 암호",
+        "전자서명",
+        "CSPRNG"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '다중요소 인증'이다. 비밀번호+PIN은 동일 요소 유형일 수 있고 피싱 저항성을 자동 보장하지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-4-19",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "FIDO2/WebAuthn",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n공개키 인증으로 웹 로그인에 피싱 저항성 있는 자격증명을 지원하는 기술",
+      "options": [
+        "공개키 암호",
+        "FIDO2/WebAuthn",
+        "PKI",
+        "ML-KEM"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'FIDO2/WebAuthn'이다. 등록된 출처·RP ID와 사용자 검증이 중요하며 서버에 개인키가 저장되지 않는다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-4-20",
+      "exam_part": "필기",
+      "subject": "정보보안 일반",
+      "kind": "multiple_choice",
+      "topic": "딥페이크 사칭",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n합성된 영상·음성 등으로 신원이나 메시지 진위를 속이는 행위",
+      "options": [
+        "해시 함수",
+        "CRL",
+        "딥페이크 사칭",
+        "ML-DSA"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '딥페이크 사칭'이다. AI 탐지기 점수만 신뢰하지 않고 별도 채널 확인·다중 승인을 사용한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-5-01",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "CIA 3요소",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n기밀성·무결성·가용성으로 정보보호의 주요 목적을 구분하는 틀",
+      "options": [
+        "CIA 3요소",
+        "취약점",
+        "RTO",
+        "개인정보 최소수집"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'CIA 3요소'이다. 세 목표의 균형은 조직의 업무와 위험 수용 기준에 따라 달라진다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-5-02",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "자산 식별",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n조직의 정보·시스템·업무 및 담당자를 파악하는 위험관리 단계",
+      "options": [
+        "위험",
+        "자산 식별",
+        "RPO",
+        "가명처리"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '자산 식별'이다. 자산 소유자와 중요도를 기록해야 평가 및 대응을 연결할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-5-03",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "위협",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n취약점을 악용하거나 손상을 유발할 수 있는 잠재적 원인",
+      "options": [
+        "SLE",
+        "BIA",
+        "위협",
+        "직무분리"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '위협'이다. 위협 자체와 취약점·발생 사건을 구분한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-5-04",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "취약점",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n시스템이나 통제에서 악용될 수 있는 약점",
+      "options": [
+        "ALE",
+        "BCP",
+        "위험 수용",
+        "취약점"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '취약점'이다. 취약점 발견만으로 실제 침해가 발생했다고 단정할 수 없다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-5-05",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "위험",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n위협·취약점·발생가능성·영향을 고려한 불확실성의 영향",
+      "options": [
+        "위험",
+        "RTO",
+        "DRP",
+        "위험 전가"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '위험'이다. 모델별 수치 산정은 다르고 근거 및 불확실성을 기록한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-5-06",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "SLE",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n단일 사건의 예상 손실액을 나타내는 위험 정량 분석 값",
+      "options": [
+        "RPO",
+        "SLE",
+        "ISMS-P",
+        "침해사고 대응"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'SLE'이다. 일반적인 교육식은 자산가치×노출계수다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-5-07",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "ALE",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n연간 예상 손실액을 나타내는 위험 정량 분석 값",
+      "options": [
+        "BIA",
+        "개인정보 최소수집",
+        "ALE",
+        "보안 감사 증적"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'ALE'이다. 교육용 모델에서 ALE=SLE×연간발생빈도로 계산한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-5-08",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "RTO",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n사고 발생 후 허용 가능한 서비스 복구 시간 목표",
+      "options": [
+        "BCP",
+        "가명처리",
+        "CIA 3요소",
+        "RTO"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'RTO'이다. RPO와 달리 시간 내 서비스 복구를 지향한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-5-09",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "RPO",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n복구 시 허용 가능한 데이터 손실 시점 목표",
+      "options": [
+        "RPO",
+        "DRP",
+        "직무분리",
+        "자산 식별"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'RPO'이다. 백업·복제 주기와 데이터 정합성에 연결된다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-5-10",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "BIA",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n업무 중단이 조직에 미치는 영향을 분석하는 과정",
+      "options": [
+        "ISMS-P",
+        "BIA",
+        "위험 수용",
+        "위협"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 'BIA'이다. 중요 업무의 영향·우선순위·RTO/RPO 정량/정성 근거를 마련한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-5-11",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "BCP",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n중단 상황에서도 핵심 업무를 지속하기 위한 계획",
+      "options": [
+        "개인정보 최소수집",
+        "위험 전가",
+        "BCP",
+        "취약점"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 'BCP'이다. 기술적 복구 절차만 아니라 인력·대체 업무·의사소통을 포함한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-5-12",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "DRP",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n재해 이후 IT 시스템과 데이터를 복구하기 위한 계획",
+      "options": [
+        "가명처리",
+        "침해사고 대응",
+        "위험",
+        "DRP"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 'DRP'이다. BCP의 일부 기술 복구 전략으로 이해할 수 있다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-5-13",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "ISMS-P",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n국내 정보보호 및 개인정보보호 관리체계 인증",
+      "options": [
+        "ISMS-P",
+        "직무분리",
+        "보안 감사 증적",
+        "SLE"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 'ISMS-P'이다. 적용 대상·의무 여부와 현재 인증기준은 공식 기관의 최신 안내를 확인한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-5-14",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "개인정보 최소수집",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n목적에 필요한 최소 범위에서 개인정보를 처리하도록 하는 원칙",
+      "options": [
+        "위험 수용",
+        "개인정보 최소수집",
+        "CIA 3요소",
+        "ALE"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '개인정보 최소수집'이다. 동의가 있더라도 목적 적합성·법적 근거·보유기간을 점검한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-5-15",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "가명처리",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n추가 정보 없이는 특정 개인을 알아볼 수 없도록 식별성을 낮추는 처리",
+      "options": [
+        "위험 전가",
+        "자산 식별",
+        "가명처리",
+        "RTO"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '가명처리'이다. 가명정보는 무조건 익명정보와 같은 것은 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-MC-5-16",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "직무분리",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n상호 견제해야 할 권한·업무를 서로 다른 주체에 배정하는 통제",
+      "options": [
+        "침해사고 대응",
+        "위협",
+        "RPO",
+        "직무분리"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '직무분리'이다. 단일 계정으로 승인·집행·검증을 모두 수행하면 부정위험이 커진다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 1
+    },
+    {
+      "key": "SEC27-MC-5-17",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "위험 수용",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n권한 있는 책임자가 잔여 위험을 인지하고 조건에 따라 감수하는 결정",
+      "options": [
+        "위험 수용",
+        "보안 감사 증적",
+        "취약점",
+        "BIA"
+      ],
+      "correct_index": 0,
+      "model_answer": "",
+      "explanation": "정답은 '위험 수용'이다. 근거·기한·재검토 조건을 문서화해야 한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 2
+    },
+    {
+      "key": "SEC27-MC-5-18",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "위험 전가",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n보험·계약 등을 통해 위험 결과의 일부 부담을 이전하는 전략",
+      "options": [
+        "CIA 3요소",
+        "위험 전가",
+        "위험",
+        "BCP"
+      ],
+      "correct_index": 1,
+      "model_answer": "",
+      "explanation": "정답은 '위험 전가'이다. 법적 의무나 최종 책임을 모두 제거한다는 의미는 아니다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-MC-5-19",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "침해사고 대응",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n탐지·분석·격리·복구·재발방지 등의 조정된 활동",
+      "options": [
+        "자산 식별",
+        "SLE",
+        "침해사고 대응",
+        "DRP"
+      ],
+      "correct_index": 2,
+      "model_answer": "",
+      "explanation": "정답은 '침해사고 대응'이다. 기록과 원본 증거의 무결성, 알림·소통·업무 영향이 중요하다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-MC-5-20",
+      "exam_part": "필기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "multiple_choice",
+      "topic": "보안 감사 증적",
+      "prompt": "다음 설명에 해당하는 정보보안 개념으로 가장 알맞은 것은?\\n\\n보안 통제가 운영됐음을 확인할 수 있는 기록과 자료",
+      "options": [
+        "위협",
+        "ALE",
+        "ISMS-P",
+        "보안 감사 증적"
+      ],
+      "correct_index": 3,
+      "model_answer": "",
+      "explanation": "정답은 '보안 감사 증적'이다. 수집 범위·변경 이력·보관 기간·접근권한을 검증한다. 다른 선택지는 해당 설명의 핵심 목적이나 동작 범위가 다르다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-01",
+      "exam_part": "실기",
+      "subject": "시스템 보안",
+      "kind": "written",
+      "topic": "시스템 계정·권한",
+      "prompt": "서버에서 관리 계정이 필요 이상으로 많을 때 위험 2가지와 점검 절차 3가지를 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "과도한 접근·책임 추적 어려움. 계정 목록과 소유자 확인→필요 권한·역할 비교→퇴사/휴면 계정 비활성화·변경 로그 재검증.",
+      "explanation": "허가된 환경에서 계정 소유와 정책을 대조해야 하며 삭제 전 영향 평가가 필요하다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-02",
+      "exam_part": "실기",
+      "subject": "시스템 보안",
+      "kind": "written",
+      "topic": "로그 무결성",
+      "prompt": "침해 의심 상황에서 서버 로그를 증거로 사용할 때 확인해야 할 사항 4가지를 쓰시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "시간 동기화와 시간대, 원본 무결성, 접근권한 및 변경 이력, 연관 요청 ID와 보존 정책.",
+      "explanation": "단일 이벤트로 공격자를 확정하지 말고 원본을 변경하지 않는 절차를 따른다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-03",
+      "exam_part": "실기",
+      "subject": "시스템 보안",
+      "kind": "written",
+      "topic": "컨테이너 격리",
+      "prompt": "컨테이너가 가상머신과 다른 보안상 특성 두 가지와 대응책을 적으시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "호스트 커널 공유, 특권·마운트 위험. 비root 실행·capabilities 제한·호스트 패치·읽기전용 파일시스템 등.",
+      "explanation": "이미지 스캔만으로 런타임 정책과 애플리케이션의 인가 문제를 보장하지 않는다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-04",
+      "exam_part": "실기",
+      "subject": "시스템 보안",
+      "kind": "written",
+      "topic": "Trivy·ScoutSuite",
+      "prompt": "Trivy와 ScoutSuite의 주요 점검 대상과 결과 해석의 한계를 설명하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "Trivy는 이미지·파일·IaC, ScoutSuite는 클라우드 계정의 구성. 둘 다 경고가 실제 악용의 확정 증거는 아니다.",
+      "explanation": "계정과 도구 버전에 맞는 실행 범위·출력 개인정보·권한을 먼저 확인한다.",
+      "source_url": "https://csrc.nist.gov/glossary",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-05",
+      "exam_part": "실기",
+      "subject": "네트워크 보안",
+      "kind": "written",
+      "topic": "VPC 접근통제",
+      "prompt": "공개 웹 서버와 사설 DB가 있는 VPC에서 보안그룹 및 NACL 정책을 어떻게 구분할지 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "공개 웹 HTTPS만 필요한 출발지에 열고 DB는 APP SG에서만 접근 허용; SG는 상태 저장, NACL은 서브넷 수준 상태 비저장.",
+      "explanation": "라우팅·공인 IP·호스트 방화벽·DB 인증을 함께 평가한다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-06",
+      "exam_part": "실기",
+      "subject": "네트워크 보안",
+      "kind": "written",
+      "topic": "서브넷 계산",
+      "prompt": "10.1.20.0/27의 전체 주소 수, 일반적인 호스트 수, 브로드캐스트 주소를 구하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "전체 32개, 일반적인 호스트 30개, 브로드캐스트 10.1.20.31.",
+      "explanation": "점대점 /31 등의 특수 사용은 일반적 네트워크·브로드캐스트 제한과 구별한다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-07",
+      "exam_part": "실기",
+      "subject": "네트워크 보안",
+      "kind": "written",
+      "topic": "방화벽 룰 감사",
+      "prompt": "방화벽에서 규칙 0.0.0.0/0 TCP/22가 발견됐을 때 위험 및 조치·재검증 절차를 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "관리 포트 과다 노출; 승인된 관리망 또는 VPN 출발지로 제한하고 변경 전후 접속/로그/업무 영향 점검.",
+      "explanation": "규칙만 보고 실제 외부 도달성을 확정하지 말고 라우트와 상위 필터를 확인한다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-08",
+      "exam_part": "실기",
+      "subject": "네트워크 보안",
+      "kind": "written",
+      "topic": "SASE·ZTNA·XDR",
+      "prompt": "SASE·ZTNA·XDR을 목적에 따라 구분해 설명하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "SASE는 네트워크·보안 기능 통합 전달, ZTNA는 신원·기기·자원 기반 접근 통제, XDR은 다중 도메인 신호 탐지·대응.",
+      "explanation": "제품별 구성 범위가 다르며 세 용어는 동의어가 아니다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-09",
+      "exam_part": "실기",
+      "subject": "어플리케이션 보안",
+      "kind": "written",
+      "topic": "패킷 분석",
+      "prompt": "HTTPS 통신의 패킷 헤더만 확보한 상황에서 확인할 수 있는 정보와 확인 불가능한 내용을 분리하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "패킷의 IP·포트·방향·시간·길이 등은 파악 가능할 수 있지만 TLS 암호화된 응용 데이터 내용은 일반적으로 알 수 없다.",
+      "explanation": "예외적으로 복호화 가능한 로그·키·프록시가 있더라도 수집은 승인과 개인정보 보호를 전제로 한다.",
+      "source_url": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-10",
+      "exam_part": "실기",
+      "subject": "어플리케이션 보안",
+      "kind": "written",
+      "topic": "API 객체 인가",
+      "prompt": "REST API에서 문서 ID만 바꾸면 다른 사용자의 문서를 읽을 수 있는 문제의 종류와 수정법을 적으시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "OWASP API1:2023 BOLA, 객체별 소유·공유 정책을 서버에서 검사하고 서로 다른 테스트 계정으로 음성 테스트.",
+      "explanation": "임의 ID의 난수성과 CORS는 서버측 인가의 대체 수단이 아니다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-11",
+      "exam_part": "실기",
+      "subject": "어플리케이션 보안",
+      "kind": "written",
+      "topic": "API 속성·기능 권한",
+      "prompt": "API1·API3·API5의 차이를 각각 한 문장으로 비교하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "API1은 객체 수준 인가, API3은 객체 속성 수준 인가, API5는 기능/엔드포인트 수준 인가 실패.",
+      "explanation": "실제 시스템에서 자원·속성·기능별 접근 정책을 분리해야 한다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-12",
+      "exam_part": "실기",
+      "subject": "어플리케이션 보안",
+      "kind": "written",
+      "topic": "입력 검증",
+      "prompt": "파일 업로드 기능에서 실행파일 업로드와 경로 조작을 줄이기 위한 방법을 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "유형/크기/내용 검사, 안전한 저장 이름, 비실행 경로와 제한 권한, 저장 후 무결성 및 감사.",
+      "explanation": "확장자만 확인하는 방식은 충분하지 않다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-13",
+      "exam_part": "실기",
+      "subject": "정보보안 일반",
+      "kind": "written",
+      "topic": "OAuth·OIDC",
+      "prompt": "OAuth 2.0과 OpenID Connect가 각각 제공하는 목적과 Access/ID 토큰 차이를 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "OAuth2는 권한 위임, OIDC는 인증·ID 계층. Access Token은 자원 접근, ID Token은 인증된 신원 정보 전달.",
+      "explanation": "토큰 서명·iss·aud·exp·scope 검증 필요성을 함께 설명한다.",
+      "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-14",
+      "exam_part": "실기",
+      "subject": "정보보안 일반",
+      "kind": "written",
+      "topic": "공개키 서명",
+      "prompt": "디지털 서명과 메시지 암호화의 보안 목표 차이를 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "디지털 서명은 서명자의 진정성과 무결성을 검증하고, 암호화는 정보의 기밀성을 제공한다.",
+      "explanation": "서명한 메시지가 자동으로 비밀이 되는 것은 아니다.",
+      "source_url": "https://csrc.nist.gov/Projects/post-quantum-cryptography",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-15",
+      "exam_part": "실기",
+      "subject": "정보보안 일반",
+      "kind": "written",
+      "topic": "PQC 알고리즘",
+      "prompt": "FIPS 203, 204, 205의 이름과 목적을 설명하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "FIPS 203 ML-KEM=키 캡슐화, 204 ML-DSA=격자 기반 서명, 205 SLH-DSA=해시 기반 서명.",
+      "explanation": "키 설정과 서명은 서로 대체할 수 없는 역할이며 실제 표준 정오표를 확인한다.",
+      "source_url": "https://csrc.nist.gov/Projects/post-quantum-cryptography",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-16",
+      "exam_part": "실기",
+      "subject": "정보보안 일반",
+      "kind": "written",
+      "topic": "동형암호",
+      "prompt": "동형암호를 이용한 외부 집계 서비스 설계 시 장점과 한계 두 가지를 서술하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "암호문 상태 계산으로 민감 원본 노출을 줄일 수 있다. 지원 연산의 제약과 계산·통신 비용, 키관리 문제가 있다.",
+      "explanation": "모든 동형암호가 모든 연산을 자유롭게 지원하는 것은 아니다.",
+      "source_url": "https://csrc.nist.gov/Projects/post-quantum-cryptography",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-17",
+      "exam_part": "실기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "written",
+      "topic": "경량암호",
+      "prompt": "자원이 제한된 IoT 센서에서 경량암호를 선택할 때 확인할 요인을 쓰시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "메모리·전력·처리 성능, 구현·사이드채널 저항, 안전한 키·nonce 관리, 검증된 표준 적합성.",
+      "explanation": "경량은 약하다는 의미가 아니라 제약 환경에 맞춰 설계한다.",
+      "source_url": "https://csrc.nist.gov/Projects/post-quantum-cryptography",
+      "difficulty": 4
+    },
+    {
+      "key": "SEC27-WR-18",
+      "exam_part": "실기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "written",
+      "topic": "위험 분석 계산",
+      "prompt": "자산 가치 8천만 원, 노출계수 25%, 연간발생빈도 0.2회인 경우 SLE·ALE와 한계를 적으시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "SLE=2천만 원, ALE=연 400만 원. 가정에 따른 기대값이다.",
+      "explanation": "조직 정책에 따라 위험 허용 기준은 다르며 공식 시험 배점 식으로 단정할 수 없다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 5
+    },
+    {
+      "key": "SEC27-WR-19",
+      "exam_part": "실기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "written",
+      "topic": "사고 대응",
+      "prompt": "대량 API 조회 경보가 발견됐을 때 확정 사실과 추정을 나누어 초기 대응을 설명하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "요청 로그·권한·전송 기록의 사실을 확인하고, 영향 범위 파악→필요한 격리/속도제한→원본 증거 보존→원인 분석과 재검증.",
+      "explanation": "대량 조회만으로 정보 유출이나 탈취 계정을 확정해서는 안 된다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 3
+    },
+    {
+      "key": "SEC27-WR-20",
+      "exam_part": "실기",
+      "subject": "정보보안 관리 및 법규",
+      "kind": "written",
+      "topic": "딥페이크 검증",
+      "prompt": "합성 음성을 이용한 임원 사칭 송금 지시를 예방하기 위한 통제 세 가지를 제시하시오.",
+      "options": [],
+      "correct_index": null,
+      "model_answer": "독립 연락 채널로 재확인, 계좌 변경의 다중 승인, 거래내역 및 증거 출처 확인.",
+      "explanation": "AI 탐지 도구의 결과가 정상이라고 확정해도 업무 승인 절차를 생략하지 않는다.",
+      "source_url": "https://www.nist.gov/cyberframework",
+      "difficulty": 4
+    }
+  ]
+}

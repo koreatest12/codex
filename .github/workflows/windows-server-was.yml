@@ -38,7 +38,8 @@ jobs:
           $scripts = @(
             'scripts/windows-server/Test-WasHost.ps1',
             'scripts/windows-server/New-WasUbuntuVm.ps1',
-            'scripts/windows-server/Invoke-WasUbuntuGuest.ps1'
+            'scripts/windows-server/Invoke-WasUbuntuGuest.ps1',
+            'scripts/windows-server/Get-WasUpgradeReadiness.ps1'
           )
           foreach ($path in $scripts) {
             $tokens = $null
@@ -59,6 +60,18 @@ jobs:
         run: |
           & ./scripts/windows-server/Test-WasHost.ps1
           if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify upgrade readiness report without changing host
+        shell: pwsh
+        run: |
+          $report = & ./scripts/windows-server/Get-WasUpgradeReadiness.ps1 -AsJson | ConvertFrom-Json
+          if ($report.upgrade_executed -ne $false) {
+            throw 'Readiness report unexpectedly claims an OS upgrade.'
+          }
+          if (-not $report.os_version -or -not $report.build_number) {
+            throw 'Windows Server inventory is incomplete.'
+          }
+          Write-Output ("Readiness inventory validated: OS build {0}" -f $report.build_number)
 
       - name: Reject malformed SSH host names before any connection
         shell: pwsh

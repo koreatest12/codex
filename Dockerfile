@@ -54,10 +54,12 @@ COPY --chown=www-data:www-data scripts/ /opt/codex-source/scripts/
 COPY --chown=www-data:www-data tests/ /opt/codex-source/tests/
 COPY --chown=www-data:www-data java-biff-planner/ /opt/codex-source/java-biff-planner/
 COPY --chown=www-data:www-data data/biff-2026/seed.json /opt/codex-source/data/biff-2026/seed.json
+COPY --chown=www-data:www-data data/study/security-exam-2027.json /opt/codex-source/data/study/security-exam-2027.json
 RUN test -f /opt/codex-source/README.md \
     && test -f /opt/codex-source/docs/DOCKER_OPERATIONS.md \
     && test -f /opt/codex-source/tests/test_privacy.py \
     && test -f /opt/codex-source/data/biff-2026/seed.json \
+    && test -f /opt/codex-source/data/study/security-exam-2027.json \
     && test ! -e /opt/codex-source/.env \
     && test ! -e /opt/codex-source/secrets \
     && test ! -e /opt/codex-source/.git
