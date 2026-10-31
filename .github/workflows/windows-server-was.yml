@@ -39,7 +39,8 @@ jobs:
             'scripts/windows-server/Test-WasHost.ps1',
             'scripts/windows-server/New-WasUbuntuVm.ps1',
             'scripts/windows-server/Invoke-WasUbuntuGuest.ps1',
-            'scripts/windows-server/Get-WasUpgradeReadiness.ps1'
+            'scripts/windows-server/Get-WasUpgradeReadiness.ps1',
+            'scripts/windows-server/RedTeamDefense-Audit.ps1'
           )
           foreach ($path in $scripts) {
             $tokens = $null
