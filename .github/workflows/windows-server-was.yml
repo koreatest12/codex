@@ -40,7 +40,9 @@ jobs:
             'scripts/windows-server/New-WasUbuntuVm.ps1',
             'scripts/windows-server/Invoke-WasUbuntuGuest.ps1',
             'scripts/windows-server/Get-WasUpgradeReadiness.ps1',
-            'scripts/windows-server/RedTeamDefense-Audit.ps1'
+            'scripts/windows-server/RedTeamDefense-Audit.ps1',
+            'scripts/windows-server/Install-RedTeamDefense.ps1',
+            'scripts/windows-server/Set-RedTeamDefenseSecurityLogging.ps1'
           )
           foreach ($path in $scripts) {
             $tokens = $null
@@ -55,6 +57,19 @@ jobs:
             }
             Write-Output "PASS: $path"
           }
+
+      - name: Verify install and security policy previews are non-mutating
+        shell: pwsh
+        run: |
+          $installPlan = & ./scripts/windows-server/Install-RedTeamDefense.ps1 -Mode Install | Out-String
+          if ($installPlan -notmatch 'Nothing changed') {
+            throw 'Install preview did not confirm non-mutating behavior.'
+          }
+          $securityPlan = & ./scripts/windows-server/Set-RedTeamDefenseSecurityLogging.ps1 -Mode Enable -EnableFailedLogonAudit | Out-String
+          if ($securityPlan -notmatch 'No policy changed') {
+            throw 'Security logging preview did not confirm non-mutating behavior.'
+          }
+          Write-Output 'PASS: installer and policy configuration preview only; no server installation or policy change.'
 
       - name: Read-only Windows Server host diagnostics
         shell: pwsh
