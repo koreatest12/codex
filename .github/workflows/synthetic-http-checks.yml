@@ -1,0 +1,76 @@
+# Keyless synthetic monitoring: HTTP smoke checks with status and latency assertions.
+# No external accounts or secrets are required.
+name: Synthetic HTTP checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: 'Space-separated URLs to check'
+        required: true
+        default: 'https://github.com https://www.githubstatus.com'
+        type: string
+      expected_status:
+        description: 'Expected HTTP status code'
+        required: true
+        default: '200'
+        type: string
+      max_latency_ms:
+        description: 'Maximum allowed response time (ms)'
+        required: true
+        default: '3000'
+        type: string
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic:
+    name: HTTP synthetic checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Run checks
+        shell: bash
+        env:
+          URLS: ${{ inputs.urls || 'https://github.com https://www.githubstatus.com' }}
+          EXPECTED_STATUS: ${{ inputs.expected_status || '200' }}
+          MAX_LATENCY_MS: ${{ inputs.max_latency_ms || '3000' }}
+        run: |
+          set -u
+          [[ "$EXPECTED_STATUS" =~ ^[0-9]{3}$ && "$MAX_LATENCY_MS" =~ ^[0-9]+$ ]] || { echo "::error::Invalid numeric input"; exit 1; }
+          mkdir -p .ci-reports
+          passed=0; failed=0
+          : > .ci-reports/results.tsv
+          for url in $URLS; do
+            if [[ ! "$url" =~ ^https?:// ]]; then
+              echo "::error::Skipping invalid URL: $url"; failed=$((failed+1)); continue
+            fi
+            out=$(curl -sS -o /dev/null -L --max-time 20 --retry 2 -w '%{http_code} %{time_total}' "$url" 2>/dev/null || echo "000 0")
+            code=${out% *}; ms=$(awk -v t="${out#* }" 'BEGIN{printf "%d", t*1000}')
+            if [[ "$code" == "$EXPECTED_STATUS" && "$ms" -le "$MAX_LATENCY_MS" ]]; then
+              status=PASS; passed=$((passed+1))
+            else
+              status=FAIL; failed=$((failed+1)); echo "::error::$url -> $code in ${ms}ms"
+            fi
+            printf '%s\t%s\t%s\t%sms\n' "$status" "$code" "$url" "$ms" >> .ci-reports/results.tsv
+          done
+          {
+            echo "### Synthetic HTTP checks"
+            echo "| Result | Status | URL | Latency |"
+            echo "|---|---|---|---|"
+            awk -F'\t' '{printf "| %s | %s | %s | %s |\n",$1,$2,$3,$4}' .ci-reports/results.tsv
+            echo; echo "Passed: $passed, Failed: $failed"
+          } | tee .ci-reports/summary.md >> "$GITHUB_STEP_SUMMARY"
+          [[ "$failed" -eq 0 ]]
+
+      - name: Upload summary
+        if: ${{ always() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: synthetic-http-summary
+          path: .ci-reports/summary.md
+          if-no-files-found: ignore
+          retention-days: 7
