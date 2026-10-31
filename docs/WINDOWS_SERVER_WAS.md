@@ -14,6 +14,13 @@ GitHub 코드와 실제 Windows Server 설치는 별개입니다. 이 저장소�
 스크립트를 실제 Windows Server에서 실행할 **관리자 권한과 물리/원격 접근**이
 필요합니다. 호스트에 무단 방화벽/DNS/포트/VM 설정 변경은 하지 않습니다.
 
+## 2026-10 업그레이드·문제은행 운영 확장
+
+- **Windows OS 업데이트는 자동 수행하지 않습니다.** 실서버 버전과 Hyper-V/클러스터, 백업/복원 검증을 위한 [Windows Server 업그레이드 준비 가이드](WINDOWS_SERVER_UPGRADE_READINESS.md)를 먼저 확인하세요.
+- 읽기 전용 진단: `scripts/windows-server/Get-WasUpgradeReadiness.ps1 -AsJson`. OS 설치·VM 변경·재부팅을 하지 않습니다.
+- Linux WAS의 `Upgrade` 명령은 **Ubuntu 게스트의 WAS 앱 업데이트**이며 Windows Server 자체의 OS 업데이트가 아닙니다.
+- 문제은행 신규 데이터: [120문항 초안·가져오기 가이드](study/2027_BULK_QUESTION_IMPORT.md). GitHub에 파일 추가만으로 실제 운영 DB에 자동 반영되지는 않습니다.
+
 ## 1. Windows Server 호스트 사전 점검
 
 관리자 PowerShell에서 다음을 실행합니다 (저장소를 먼저 clone).
@@ -130,7 +137,7 @@ RP ID, TLS 프록시 및 인증서가 필요합니다. 터널과 localhost 설�
 다른 컴퓨터에서 안전하게 접속하도록 구성되지는 않습니다.
 
 같은 호출에서 `-Action`을 `Start`, `Stop`, `Restart`, `Status`,
-`Logs`, `Backup`, `Upgrade`로 바꿔 관리합니다.
+`Health`, `Backup`, `Upgrade`로 바꿔 관리합니다. (`Logs`는 현재 Windows SSH 스크립트 허용 목록에 없습니다.)
 `Backup`은 **Ubuntu VM 내부**의 `~/codex/backups/`에 저장되며
 GitHub에 업로드하지 않습니다. 저장 데이터와 별도로 암호화 키도
 안전하게 백업해야 합니다. `Upgrade`는 Ubuntu 게스트에 현재
