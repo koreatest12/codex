@@ -29,6 +29,10 @@ data/*
 !data/biff-2026/
 data/biff-2026/*
 !data/biff-2026/seed.json
+# Explicitly package only the public, reviewed-for-format study seed
+!data/study/
+data/study/*
+!data/study/security-exam-2027.json
 
 # Build outputs, caches and workstation folders
 **/__pycache__/
