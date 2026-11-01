@@ -5,6 +5,8 @@
 
 로컬 Windows PC/서버의 레드팀 공격 대비 상태를 점검하는 **읽기 전용** PowerShell 도구입니다.
 
+Windows Server에 **예약 작업으로 설치**하거나 **선택적 감사 로깅 정책**을 적용하려면 [서버 설치 및 보안 설정 가이드](REDTEAM_DEFENSE_SERVER_INSTALL.md)를 참고하세요. 기존 단발 점검 기능은 그대로 유지됩니다.
+
 ## 지원 및 범위
 - Windows 10/11 및 Windows Server의 해당 PowerShell 모듈을 지원하는 환경에서 사용
 - Windows PowerShell 5.1 또는 호환 PowerShell 7 (운영체제/모듈에 따라 일부 점검은 `UNKNOWN`)

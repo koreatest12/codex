@@ -24,6 +24,7 @@ param(
     [int]$FailedLogonThreshold = 5
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'RedTeamDefense-Storage.ps1')
 if ($env:OS -ne 'Windows_NT') { throw 'This tool supports Windows only.' }
 $installDir = Join-Path $env:ProgramFiles 'RedTeamDefense'
 $dataDir = Join-Path $env:ProgramData 'RedTeamDefense'
@@ -41,11 +42,6 @@ function Test-Elevated {
 }
 function Get-AuditTask {
     return Get-ScheduledTask -TaskPath $taskPath -TaskName $taskName -ErrorAction SilentlyContinue
-}
-function Protect-Directory([string]$Path) {
-    # Well-known SIDs work on Windows installations in any display language.
-    & icacls.exe $Path '/inheritance:r' '/grant:r' '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "Failed to restrict ACL: $Path" }
 }
 
 $existingTask = Get-AuditTask
@@ -75,16 +71,23 @@ if ($Mode -eq 'Install') {
         throw 'Existing install/task detected. Refusing to overwrite; investigate or uninstall first.'
     }
     if (Test-Path -LiteralPath $dataDir) {
-        throw 'Existing data directory detected. Refusing to alter ACLs or existing reports automatically.'
+        # Preserve existing data only after checking all descendants, owners and ACLs.
+        Test-RedTeamProtectedDirectory $dataDir -Recursive
+        if (Test-Path -LiteralPath $reportsDir) { Test-RedTeamProtectedDirectory $reportsDir }
+        if (Test-Path -LiteralPath $backupsDir) { Test-RedTeamProtectedDirectory $backupsDir }
     }
     if ($PSCmdlet.ShouldProcess($env:COMPUTERNAME, 'Install protected RedTeamDefense files and daily scheduled audit')) {
-        New-Item -ItemType Directory -Path $installDir -ErrorAction Stop | Out-Null
-        New-Item -ItemType Directory -Path $reportsDir -Force -ErrorAction Stop | Out-Null
-        New-Item -ItemType Directory -Path $backupsDir -Force -ErrorAction Stop | Out-Null
-        Protect-Directory $installDir
-        Protect-Directory $dataDir
-        Protect-Directory $reportsDir
-        Protect-Directory $backupsDir
+        $createdInstallDir = $false
+        try {
+        # Create each directory with its protected ACL in the same operation.
+        New-RedTeamProtectedDirectory $installDir
+        $createdInstallDir = $true
+        if (-not (Test-Path -LiteralPath $dataDir)) {
+            New-RedTeamProtectedDirectory $dataDir
+        }
+        if (-not (Test-Path -LiteralPath $reportsDir)) { New-RedTeamProtectedDirectory $reportsDir }
+        if (-not (Test-Path -LiteralPath $backupsDir)) { New-RedTeamProtectedDirectory $backupsDir }
+        Test-RedTeamProtectedDirectory $dataDir -Recursive
         Copy-Item -LiteralPath $sourceScript -Destination $installedScript -ErrorAction Stop
         $exe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
         $arguments = '-NoProfile -NonInteractive -File "{0}" -OutputDirectory "{1}" -LookbackHours {2} -FailedLogonThreshold {3}' -f $installedScript, $reportsDir, $LookbackHours, $FailedLogonThreshold
@@ -94,12 +97,22 @@ if ($Mode -eq 'Install') {
         $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
         $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 20) -StartWhenAvailable -MultipleInstances IgnoreNew
         Register-ScheduledTask -TaskPath $taskPath -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description 'Read-only local Windows security audit. Results remain on the server.' -ErrorAction Stop | Out-Null
+        } catch {
+            # Remove only the file/directory this attempt created; preserve all data.
+            if ($createdInstallDir -and (Test-Path -LiteralPath $installedScript -PathType Leaf)) { Remove-Item -LiteralPath $installedScript -Force -ErrorAction Continue }
+            if ($createdInstallDir -and (Test-Path -LiteralPath $installDir -PathType Container)) {
+                if (@(Get-ChildItem -LiteralPath $installDir -Force).Count -eq 0) { Remove-Item -LiteralPath $installDir -ErrorAction Continue }
+            }
+            Write-Warning 'Install did not complete. Preserved data directories. Inspect task, ACLs and folders before retrying.'
+            throw
+        }
         Write-Output ("Installed scheduled audit at {0} (local time). Reports: {1}" -f $DailyAt, $reportsDir)
         Write-Output 'Security baselines, firewall rules, Defender, RDP, and network settings were NOT changed.'
     }
 } elseif ($Mode -eq 'Uninstall') {
     if ($PSCmdlet.ShouldProcess($env:COMPUTERNAME, 'Remove RedTeamDefense scheduled task and installed script; preserve reports/backups')) {
         if ($null -ne $existingTask) {
+            if (@($existingTask.Actions).Count -ne 1 -or $existingTask.Actions[0].Arguments -notlike ('*' + $installedScript + '*')) { throw 'Existing task does not match this installation; refusing to remove it.' }
             Unregister-ScheduledTask -TaskPath $taskPath -TaskName $taskName -Confirm:$false -ErrorAction Stop
         }
         if (Test-Path -LiteralPath $installedScript -PathType Leaf) {
