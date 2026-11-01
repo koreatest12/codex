@@ -1,6 +1,6 @@
 # 정보보안기사 학습 시스템 (GitHub 통합판)
 
-이 폴더는 \`koreatest12/codex\`의 **기존** \`data/study/security-exam-2027.json\` 데이터를 재사용해 동작하는 독립형 로컬 FastAPI 학습 앱입니다.
+이 폴더는 `koreatest12/codex`의 **기존** `data/study/security-exam-2027.json` 데이터를 재사용해 동작하는 독립형 로컬 FastAPI 학습 앱입니다.
 
 ## 기능
 
@@ -18,28 +18,28 @@
 
 저장소 루트에서:
 
-\`\`\`powershell
+```powershell
 cd security-study-system
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8000
-\`\`\`
+```
 
 브라우저 주소: http://127.0.0.1:8000
 
-Linux에서도 \`python3 -m venv .venv\`로 가상환경을 만들고 동일하게 실행할 수 있습니다.
+Linux에서도 `python3 -m venv .venv`로 가상환경을 만들고 동일하게 실행할 수 있습니다.
 
 ## 테스트
 
-\`\`\`powershell
+```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m pytest -q tests
-\`\`\`
+```
 
 ## 안전 및 데이터
 
-- **로컬 개인 전용**입니다. 관리자 인증, HTTPS, 다중 사용자 기능이 없으므로 \`0.0.0.0\`에 공개하지 마세요.
-- 문제은행 입력은 기존 저장소의 \`data/study/security-exam-2027.json\`을 읽습니다. 해당 파일을 삭제하거나 수정하지 않습니다.
-- 공부 기록은 이 폴더의 \`data/study.sqlite3\`에 보관됩니다. 서버를 종료한 후 DB 파일을 백업하세요. 이 폴더의 \`data/\`는 Git 추적 대상이 아닙니다.
+- **로컬 개인 전용**입니다. 관리자 인증, HTTPS, 다중 사용자 기능이 없으므로 `0.0.0.0`에 공개하지 마세요.
+- 문제은행 입력은 기존 저장소의 `data/study/security-exam-2027.json`을 읽습니다. 해당 파일을 삭제하거나 수정하지 않습니다.
+- 공부 기록은 이 폴더의 `data/study.sqlite3`에 보관됩니다. 서버를 종료한 후 DB 파일을 백업하세요. 이 폴더의 `data/`는 Git 추적 대상이 아닙니다.
 - 기존 루트 Flask/WebAuthn 서버나 배포 구성은 변경하지 않습니다. 별도 포트에서 직접 실행하는 개인 학습 앱입니다.
 - 원래 채팅에서 제공한 35개 개념·45개 문제 ZIP과는 **다른 GitHub 통합 구현**입니다. 이 버전은 저장소의 기존 2027 학습은행을 재사용하므로 문항 구성과 개념 상세 내용이 다릅니다.
