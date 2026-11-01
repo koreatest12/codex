@@ -21,6 +21,7 @@ param(
     [switch]$Apply
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'RedTeamDefense-Storage.ps1')
 if ($env:OS -ne 'Windows_NT') { throw 'This tool supports Windows only.' }
 
 # Stable auditing subcategory GUID: Audit_Logon_Logon, independent of OS language.
@@ -73,10 +74,13 @@ if (-not (Test-Path -LiteralPath $backupRoot -PathType Container)) {
     throw 'Install RedTeamDefense first to provision protected local backup storage.'
 }
 
+Test-RedTeamProtectedDirectory $dataDir -Recursive
+Test-RedTeamProtectedDirectory $backupRoot
+
 if ($PSCmdlet.ShouldProcess($env:COMPUTERNAME, 'Back up current policy, then enable selected security logging')) {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss-ffff'
     $backupDir = Join-Path $backupRoot ("SecurityLogging-$stamp")
-    New-Item -ItemType Directory -Path $backupDir -ErrorAction Stop | Out-Null
+    New-RedTeamProtectedDirectory $backupDir
     $registryFile = Join-Path $backupDir 'script-block-policy-before.json'
     $registry | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $registryFile -Encoding UTF8
     $auditFile = Join-Path $backupDir 'audit-policy-before.csv'
@@ -84,6 +88,7 @@ if ($PSCmdlet.ShouldProcess($env:COMPUTERNAME, 'Back up current policy, then ena
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $auditFile)) {
         throw 'Audit policy backup failed; no settings were changed.'
     }
+    try {
     if ($EnableFailedLogonAudit) {
         # Keep current Success setting unchanged. Change Failure only.
         & auditpol.exe /set "/subcategory:$logonGuid" /failure:enable | Out-Null
@@ -94,6 +99,10 @@ if ($PSCmdlet.ShouldProcess($env:COMPUTERNAME, 'Back up current policy, then ena
             New-Item -Path $regPath -Force -ErrorAction Stop | Out-Null
         }
         New-ItemProperty -LiteralPath $regPath -Name 'EnableScriptBlockLogging' -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null
+    }
+    } catch {
+        Write-Warning "A policy change may have been partially applied. Backups are at $backupDir. Do not restore the full audit policy without separate approval."
+        throw
     }
     Write-Output ("Selected logging policies requested. Local backup: {0}" -f $backupDir)
     Write-Output 'Check resulting effective policy; domain GPO/MDM may override local changes.'

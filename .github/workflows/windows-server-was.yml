@@ -42,7 +42,9 @@ jobs:
             'scripts/windows-server/Get-WasUpgradeReadiness.ps1',
             'scripts/windows-server/RedTeamDefense-Audit.ps1',
             'scripts/windows-server/Install-RedTeamDefense.ps1',
-            'scripts/windows-server/Set-RedTeamDefenseSecurityLogging.ps1'
+            'scripts/windows-server/Set-RedTeamDefenseSecurityLogging.ps1',
+            'scripts/windows-server/RedTeamDefense-Storage.ps1',
+            'scripts/windows-server/Remove-RedTeamDefenseExpiredReports.ps1'
           )
           foreach ($path in $scripts) {
             $tokens = $null
@@ -70,6 +72,10 @@ jobs:
             throw 'Security logging preview did not confirm non-mutating behavior.'
           }
           Write-Output 'PASS: installer and policy configuration preview only; no server installation or policy change.'
+
+      - name: Exercise install, uninstall, reinstall and retention on disposable runner
+        shell: powershell
+        run: ./tests/windows/RedTeamDefense-Integration.ps1
 
       - name: Read-only Windows Server host diagnostics
         shell: pwsh
